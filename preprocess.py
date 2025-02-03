@@ -12,6 +12,9 @@ def dcm_to_nii():
     #NB this is just a wrapper around dcm2niix
 
     print(fsl.data.dicom.dcm2niix())
+    print(fsl.data.dicom.enabled())
+
+    #fsl.data.dicom.__init__()
 
     pass
 
