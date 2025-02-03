@@ -1,9 +1,6 @@
 import fsl.data.dicom
 from multiprocessing import Pool
 
-
-print(fsl.data.dicom.MIN_DCM2NIIX_VERSION)
-
 def main():
 
     pass
@@ -13,6 +10,8 @@ def dcm_to_nii():
 
     #fsl.data.dicom
     #NB this is just a wrapper around dcm2niix
+
+    print(fsl.data.dicom.dcm2niix())
 
     pass
 
@@ -40,4 +39,6 @@ def crop():
 def intensity_normalisation():
 
     pass
+
+dcm_to_nii()
 
