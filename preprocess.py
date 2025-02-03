@@ -1,4 +1,4 @@
-from fslpy import *
+import fsl.data.dicom
 from multiprocessing import Pool
 
 
