@@ -1,4 +1,7 @@
 import fsl.data.dicom
+import fsl.data.image
+import fsl.wrappers.bet
+import fsl.transform.affine
 from multiprocessing import Pool
 
 def main():
@@ -14,7 +17,19 @@ def dcm_to_nii():
     print(fsl.data.dicom.dcm2niix())
     print(fsl.data.dicom.enabled())
 
-    #fsl.data.dicom.__init__()
+    metadata = fsl.data.dicom.scanDir("/uolstore/home/student_lnxhome01/sc22olj/Compsci/year3/individual-project-COMP3931/individual-project-sc22olj/sample-mri/I10968663")
+
+    dicomImage = fsl.data.dicom.loadSeries(metadata[0])
+
+    print(type(dicomImage[0]))
+
+    #print(myimage.__str__)
+
+    #fsl.wrappers.bet("nii-bet-test/I1282317/I1282317_Sagittal_3D_FLAIR_20191016160427_3.nii", "nii-bet-test/I1282317/wrapper-out.nii")
+
+    #fsl.data.dicom.__init__(myimage, ,"sample-mri/I10968663")
+
+    #myimage.save
 
     pass
 
