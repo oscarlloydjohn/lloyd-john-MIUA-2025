@@ -1,0 +1,9 @@
+singularity exec --nv \
+                 --no-home \
+                 -B /vol/scratch/SoC/misc/2024/sc22olj/test-dataset-2-processed:/data \
+                 -B /vol/scratch/SoC/misc/2024/sc22olj/test-output:/output \
+                 -B /vol/scratch/SoC/misc/2024/sc22olj/tools/freesurfer-license:/freesurfer-license \
+                 ./fastsurfer-gpu.sif \
+                 /fastsurfer/run_fastsurfer.sh \
+                 --fs_license /freesurfer-license/license.txt --sd /output --sid 002_S_0413 --t1 /data/002_S_0413/MPR____N3__Scaled/2006-05-19_16_17_47.0/I40657/ADNI_002_S_0413_MR_MPR____N3__Scaled_Br_20070216232854688_S14782_I40657.nii --parallel --3T --seg_only --threads 4
+                
