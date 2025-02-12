@@ -1,3 +1,15 @@
+# Open shell 
+singularity exec --nv \
+                 --no-home \
+                 -B /vol/scratch/SoC/misc/2024/sc22olj/test:/vol/scratch/SoC/misc/2024/sc22olj/test \
+                 -B /vol/scratch/SoC/misc/2024/sc22olj/tools/freesurfer-license:/vol/scratch/SoC/misc/2024/sc22olj/tools/freesurfer-license \
+                 /vol/scratch/SoC/misc/2024/sc22olj/fastsurfer-gpu.sif bash
+
+singularity exec --nv \
+                 --bind /:/ \
+                  /vol/scratch/SoC/misc/2024/sc22olj/fastsurfer-gpu.sif bash
+
+# Run processing
 singularity exec --nv \
                  --no-home \
                  -B /vol/scratch/SoC/misc/2024/sc22olj/test-dataset-2-processed:/data \
@@ -7,3 +19,23 @@ singularity exec --nv \
                  /fastsurfer/run_fastsurfer.sh \
                  --fs_license /freesurfer-license/license.txt --sd /output --sid 002_S_0413 --t1 /data/002_S_0413/MPR____N3__Scaled/2006-05-19_16_17_47.0/I40657/ADNI_002_S_0413_MR_MPR____N3__Scaled_Br_20070216232854688_S14782_I40657.nii --parallel --3T --seg_only --threads 4
                 
+                
+# Run processing in parallel
+brun_fastsurfer.sh [...] [--batch "<i>/<n>"] [--parallel <N>|max] [--parallel_seg <N>|max] [--parallel_surf <N>|max]
+    [--run_fastsurfer <script to run fastsurfer>] [--statusfile <filename>] [--debug] [--help]
+    [<additional run_fastsurfer.sh options>]
+
+$FASTSURFER_HOME/brun_fastsurfer.sh --fs_license /vol/scratch/SoC/misc/2024/sc22olj/tools/freesurfer-license/license.txt --seg_only --sd /vol/scratch/SoC/misc/2024/sc22olj/test < /vol/scratch/SoC/misc/2024/sc22olj/test/nii-list.txt
+
+$FASTSURFER_HOME/brun_fastsurfer.sh --debug --subject_list data/nii-list.txt --run_fastsurfer /fastsurfer/run_fastsurfer.sh --sid test123 --fs_license /freesurfer-license/license.txt --seg_only --allow_root --sd /vol/scratch/SoC/misc/2024/sc22olj/test
+
+
+
+
+# Move all files from subdirectories into current
+find . -type f -exec mv {} . \;
+find . -type d -empty -delete
+
+# All nii files to list
+find $(pwd) -maxdepth 1 -type f -name "*.nii" > nii-list.txt
+
