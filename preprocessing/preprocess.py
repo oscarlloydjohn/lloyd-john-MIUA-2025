@@ -155,6 +155,15 @@ def move_nii(data_path, filename):
 
 def batch_run(data_path, nii_list, container_path, license_path):
     
+    # Initialise container
+    container_process = [
+        "singularity", "exec", "--nv", 
+        "--no-home", 
+        f"-B {data_path}:/{data_path}", 
+        f"-B {license_path}:/{license_path}", 
+        container_path
+    ]
+    
     # Read the completed.txt file to get a list of already processed files
     completed_files = set()
 
