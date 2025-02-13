@@ -105,13 +105,8 @@ def process_file(data_path, filename, license_path, container_path, threads):
     dirname = os.path.splitext(os.path.basename(filename))[0]
 
     command = [
-        "singularity", "exec", "--nv",
-        "--no-home",
-        f"-B {data_path}:/{data_path}",
-        f"-B {license_path}:/{license_path}",
-        container_path,
         "/fastsurfer/run_fastsurfer.sh",
-        "--fs_license", f"{license_path}/license.txt",
+        "--fs_license", f"{license_path}",
         f"--sd", data_path,
         "--sid", dirname,
         f"--t1", f"{data_path}/{filename}",
@@ -155,15 +150,6 @@ def move_nii(data_path, filename):
 
 def batch_run(data_path, nii_list, container_path, license_path):
     
-    # Initialise container
-    container_process = [
-        "singularity", "exec", "--nv", 
-        "--no-home", 
-        f"-B {data_path}:/{data_path}", 
-        f"-B {license_path}:/{license_path}", 
-        container_path
-    ]
-    
     # Read the completed.txt file to get a list of already processed files
     completed_files = set()
 
@@ -206,15 +192,13 @@ def batch_run(data_path, nii_list, container_path, license_path):
 
     print("Batch processing complete. Files have been logged to completed.log.")
 
-    
-license_path = "/vol/scratch/SoC/misc/2024/sc22olj/tools/freesurfer-license"
-container_path = "/vol/scratch/SoC/misc/2024/sc22olj/fastsurfer-gpu.sif"
-
 parser = argparse.ArgumentParser(description="Script for batch processing nii files using fastsurfer")
 
 parser.add_argument('--compact_dir', action='store_true')
-parser.add_argument('--remove_files_containing', action='store_true')
+parser.add_argument('--remove_files_containing', type=str, required=False)
 parser.add_argument('--data_path', type=str, required=True)
+parser.add_argument('--license_path', type=str, required=True)
+parser.add_argument('--container_path', type=str, required=True)
 
 args = parser.parse_args()
 
@@ -225,4 +209,4 @@ if args.remove_files_containing:
     remove_files_containing(args.data_path, args.remove_files_containing)
 
 # Perform batch run with other parameters
-batch_run(args.data_path, list_nii(args.data_path), container_path, license_path)
+batch_run(args.data_path, list_nii(args.data_path), args.container_path, args.license_path)
