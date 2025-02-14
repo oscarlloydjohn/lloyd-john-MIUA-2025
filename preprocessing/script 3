@@ -1,1 +1,0 @@
-nohup ./run_processing.sh > /vol/scratch/SoC/misc/2024/sc22olj/full-datasets/adni1-complete-3yr-3t/output.log 2>&1 & disown

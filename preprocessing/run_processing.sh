@@ -1,6 +1,6 @@
 #!/bin/bash
 
-DATA_PATH="/vol/scratch/SoC/misc/2024/sc22olj/full-datasets/adni1-complete-3yr-3t"
+DATA_PATH="/vol/scratch/SoC/misc/2024/sc22olj/test_dataset"
 SCRIPT_PATH="/uolstore/home/student_lnxhome01/sc22olj/Compsci/year3/individual-project-COMP3931/individual-project-sc22olj/preprocessing/preprocess.py"
 LICENSE_PATH="/vol/scratch/SoC/misc/2024/sc22olj/tools/freesurfer-license/license.txt"
 CONTAINER_PATH="/vol/scratch/SoC/misc/2024/sc22olj/fastsurfer-gpu.sif"

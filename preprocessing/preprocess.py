@@ -4,23 +4,20 @@ import shutil
 from concurrent.futures import ThreadPoolExecutor
 import argparse
 
-# Deletes all files that contain "_Scaled_2_" in their name
+# Deletes all files that contain a string in their name
 def remove_files_containing(data_path, string):
     
-    # Get all files in the directory
     files = [f for f in os.listdir(data_path) if os.path.isfile(os.path.join(data_path, f))]
     
-    # Filter out files containing "_Scaled_2_"
     files_to_remove = [f for f in files if string in f]
     
-    # Define a helper function to remove the file
     def delete_file(file_name):
         
         try:
             
             file_path = os.path.join(data_path, file_name)
             
-            os.remove(file_path)  # or shutil.rmtree(file_path) if it is a directory
+            os.remove(file_path)
             
             print(f"Deleted: {file_name}")
             
@@ -28,8 +25,8 @@ def remove_files_containing(data_path, string):
             
             print(f"Error deleting {file_name}: {e}")
 
-    # Use ThreadPoolExecutor to delete files in parallel
     with ThreadPoolExecutor() as executor:
+        
         executor.map(delete_file, files_to_remove)
 
 
@@ -49,7 +46,6 @@ def batch_mgz_to_nii(data_path, batchname):
     def convert_mgz_to_nii(filename):
         file_path = os.path.join(target, filename)
 
-        # Define output filename with .nii extension
         output_filename = os.path.splitext(filename)[0] + ".nii"
         output_file_path = os.path.join(target, output_filename)
 
@@ -58,10 +54,8 @@ def batch_mgz_to_nii(data_path, batchname):
 
         print(f"Converted {filename} to {output_filename}")
     
-    # Use ThreadPoolExecutor to run the tasks in parallel
     with ThreadPoolExecutor() as executor:
         
-        # Submit all conversion tasks to the executor
         executor.map(convert_mgz_to_nii, mgz_files)
     
     print("All .mgz files have been converted.")
@@ -114,28 +108,26 @@ def process_file(data_path, filename, license_path, container_path, threads):
     ]
 
     process = subprocess.Popen(command)
+    
     process.wait()
     
     return
 
+# Move an nii file into the directory under the same name
 def move_nii(data_path, filename):
     
-    # Filename without extension for dir
     dirname = os.path.splitext(os.path.basename(filename))[0]
 
-    # Check if target directory exists
     target = os.path.join(data_path, dirname)
-        # Define the function to run mri_convert for each file
+
     if not os.path.exists(target):
         
         print(f"Directory {target} does not exist")
         
         return
-
-    # Create the full target path for the file
+    
     target_path = os.path.join(target, filename)
 
-    # Move the file to the target directory
     try:
         
         shutil.move(os.path.join(data_path, filename), target_path)
@@ -148,7 +140,7 @@ def move_nii(data_path, filename):
         
     return
 
-def batch_run(data_path, nii_list, container_path, license_path):
+def batch_run(data_path, nii_list, container_path, license_path, nii_to_mgz):
     
     # Read the completed.txt file to get a list of already processed files
     completed_files = set()
@@ -166,7 +158,6 @@ def batch_run(data_path, nii_list, container_path, license_path):
     for file in nii_list:
         
         # Skip the file if it's already in the completed.txt file
-        
         if file in completed_files:
             
             print(f"Skipping {file}, already processed.")
@@ -179,7 +170,9 @@ def batch_run(data_path, nii_list, container_path, license_path):
             
             move_nii(data_path, file)
             
-            batch_mgz_to_nii(data_path, file)
+            if nii_to_mgz:
+                
+                batch_mgz_to_nii(data_path, file)
 
             # Open 'completed.txt' file in append mode and write the processed file
             with open(f"{data_path}/completed.log", 'a') as completed_file:
@@ -195,6 +188,7 @@ def batch_run(data_path, nii_list, container_path, license_path):
 parser = argparse.ArgumentParser(description="Script for batch processing nii files using fastsurfer")
 
 parser.add_argument('--compact_dir', action='store_true')
+parser.add_argument('--mgz_to_nii', action='store_true')
 parser.add_argument('--remove_files_containing', type=str, required=False)
 parser.add_argument('--data_path', type=str, required=True)
 parser.add_argument('--license_path', type=str, required=True)
@@ -209,4 +203,4 @@ if args.remove_files_containing:
     remove_files_containing(args.data_path, args.remove_files_containing)
 
 # Perform batch run with other parameters
-batch_run(args.data_path, list_nii(args.data_path), args.container_path, args.license_path)
+batch_run(args.data_path, list_nii(args.data_path), args.container_path, args.license_path, args.mgz_to_nii)
