@@ -10,6 +10,22 @@ import shutil
 from vis import *
 from extraction import *
 
+# Performs brain extraction using the orig_nu.mgz and mask.mgz of the subject by multiplying the mask with the image
+def extract_brain(orig_file, mask_file):
+    
+    # Load the image and the brain mask
+    image = nibabel.load(orig_file)
+    mask = nibabel.load(mask_file)
+    
+    # Get their image arrays
+    image_array = np.asarray(image.dataobj)
+    mask_array = np.asarray(mask.dataobj)
+    
+    # Apply the mask, the mask entries are 1 or 0
+    brain_array = image_array * mask_array
+    
+    return brain_array
+
 # Affine align a single subject
 def alignment(subject, reference_brain):
         
@@ -35,7 +51,7 @@ def alignment(subject, reference_brain):
     
     # Make nibabel image from array
     # Identity matrix as affine transform
-    aligned_image = nibabel.Nifti1Image(aligned_brain_array, np.eye(4))
+    aligned_image = nibabel.Nifti1Image(aligned_brain_array.astype('uint8'), np.eye(4))
     
     # Save the NiBabel image as a .nii file
     aligned_image_path = os.path.join(subject.path, 'brain_aligned.nii')
@@ -47,7 +63,7 @@ def alignment(subject, reference_brain):
     return aligned_image
 
 # Affine align a list of subjects in parallel 
-def alignment_parallel(subject_list):
+def alignment_parallel(subject_list, reference_brain):
         
     # Use ProcessPoolExecutor to run affine alignment in parallel
     with concurrent.futures.ProcessPoolExecutor() as executor:
@@ -56,7 +72,7 @@ def alignment_parallel(subject_list):
         
         for subject in subject_list:
 
-            futures.append(executor.submit(alignment, subject))
+            futures.append(executor.submit(alignment, subject, reference_brain))
         
         for future in concurrent.futures.as_completed(futures):
             
@@ -71,7 +87,7 @@ def aux_alignment(subject, file, is_aparc):
     
     # Open both images
     fixed_image = ants.from_numpy(np.asarray(nibabel.load(subject.brain_aligned).get_fdata()))
-    
+
     moving_image = ants.from_numpy(np.asarray(nibabel.load(file).get_fdata()))
     
     # Must use nearest neighbours for interpolation to preserve discrete labels (colours), prevents blurring
@@ -88,7 +104,8 @@ def aux_alignment(subject, file, is_aparc):
         
         # Convert to nibabel image
         # Make sure parcellation files are stored as int as they contain discrete values
-        transformed_image = nibabel.Nifti1Image(transformed_image.numpy(), np.eye(4), dtype=np.int32)
+        # int32 as aparc files can have values larger than 255
+        transformed_image = nibabel.Nifti1Image(transformed_image.numpy().astype('uint32'), np.eye(4))
 
         nibabel.save(transformed_image, path)
         
@@ -107,7 +124,7 @@ def aux_alignment(subject, file, is_aparc):
     return transformed_image
 
 # Align aparc files in parallel
-def aux_alignment_parallel(subject_list):
+def aux_alignment_parallel(subject_list, moving_image_attribute):
     
     # Use ProcessPoolExecutor to run affine alignment in parallel
     with concurrent.futures.ProcessPoolExecutor() as executor:
@@ -116,7 +133,7 @@ def aux_alignment_parallel(subject_list):
         
         for subject in subject_list:
 
-            futures.append(executor.submit(aux_alignment, subject, subject.aparc, True))
+            futures.append(executor.submit(aux_alignment, subject, getattr(subject, moving_image_attribute), True))
             
         for future in concurrent.futures.as_completed(futures):
             
