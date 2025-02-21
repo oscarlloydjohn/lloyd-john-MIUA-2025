@@ -1,22 +1,17 @@
 import nibabel
 import nibabel.affines
-from PIL import Image
 import os
-import fnmatch
 import numpy as np
 import ants
 import concurrent.futures
-import pandas as pd
-import glob
-import xml.etree.ElementTree as ET
-import xmltodict
 import shutil
-import pprint
-import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D
+
+# Custom modules
+from vis import *
+from extraction import *
 
 # Affine align a single subject
-def alignment(subject):
+def alignment(subject, reference_brain):
         
     # Extract brain of subject and convert it to an ANTsPy image
     # The subject's brain is the moving image
@@ -26,7 +21,7 @@ def alignment(subject):
     
     # Convert the reference brain to an ANTsPy image
     # The reference brain is already extracted
-    fixed_image = ants.from_numpy(reference_brain_array_fastsurfer)
+    fixed_image = ants.from_numpy(reference_brain)
     
     # Perform registration using ANTsPy
     registration = ants.registration(fixed=fixed_image, moving=moving_image, type_of_transform='AffineFast')
@@ -106,7 +101,7 @@ def aux_alignment(subject, file, is_aparc):
 
         nibabel.save(transformed_image, path)
         
-        subject.aux_file_list.append(path)
+        subject.aux_file_list.add(path)
         
     
     return transformed_image
