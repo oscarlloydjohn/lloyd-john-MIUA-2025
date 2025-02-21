@@ -15,7 +15,8 @@ def extract_region(subject, values_list, brain, aparc, is_aligned=False):
     image_array = nibabel.load(brain).dataobj
     
     # Must be int for comparison with values list. Cannot cast using numpy due to errors
-    aparc_array = nibabel.casting.float_to_int(nibabel.load(aparc).dataobj, np.int32)
+    # NB aparcs must be saved as int files
+    aparc_array = nibabel.load(aparc).dataobj
     
     # Create a mask from regions in list
     filtered_array = np.where(np.isin(aparc_array, values_list), 1, 0)

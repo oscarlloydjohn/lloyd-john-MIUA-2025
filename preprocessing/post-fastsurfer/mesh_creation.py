@@ -37,7 +37,7 @@ def volume_to_mesh(subject, fname_or_attribute):
     
     return verts
 
-def volume_to_mesh_parallel(subject_list, fname_or_attribute, downsample_factor):
+def volume_to_mesh_parallel(subject_list, fname_or_attribute, downsample_factor=50):
     
     with concurrent.futures.ProcessPoolExecutor() as executor:
         

@@ -83,7 +83,7 @@ def alignment_parallel(subject_list, reference_brain):
 
 # Uses affine_alignment.mat of a subject to align another file (for example the aseg file)
 # Must have already been aligned using 
-def aux_alignment(subject, file, is_aparc):
+def aux_alignment(subject, file, is_aparc=False):
     
     # Open both images
     fixed_image = ants.from_numpy(np.asarray(nibabel.load(subject.brain_aligned).get_fdata()))
@@ -114,7 +114,7 @@ def aux_alignment(subject, file, is_aparc):
     else:
         
         # Convert to nibabel image
-        transformed_image = nibabel.Nifti1Image(transformed_image.numpy(), np.eye(4))
+        transformed_image = nibabel.Nifti1Image(transformed_image.numpy().astype('uint8'), np.eye(4))
 
         nibabel.save(transformed_image, path)
         
@@ -124,7 +124,7 @@ def aux_alignment(subject, file, is_aparc):
     return transformed_image
 
 # Align aparc files in parallel
-def aux_alignment_parallel(subject_list, moving_image_attribute):
+def aux_alignment_parallel(subject_list, moving_image_attribute, is_aparc=False):
     
     # Use ProcessPoolExecutor to run affine alignment in parallel
     with concurrent.futures.ProcessPoolExecutor() as executor:
@@ -133,7 +133,7 @@ def aux_alignment_parallel(subject_list, moving_image_attribute):
         
         for subject in subject_list:
 
-            futures.append(executor.submit(aux_alignment, subject, getattr(subject, moving_image_attribute), True))
+            futures.append(executor.submit(aux_alignment, subject, getattr(subject, moving_image_attribute), is_aparc))
             
         for future in concurrent.futures.as_completed(futures):
             
