@@ -19,6 +19,7 @@ from skimage import measure
 # Custom modules
 from .vis import *
 
+# Convert a volume of voxels to a pointcloud mesh using walking cubes
 def volume_to_mesh(subject, fname_or_attribute):
     
     if os.path.exists(os.path.join(subject.path, fname_or_attribute)):
@@ -50,5 +51,55 @@ def volume_to_mesh_parallel(subject_list, fname_or_attribute, downsample_factor=
         for future in concurrent.futures.as_completed(futures):
             
             display_mesh(future.result(), downsample_factor)
+    
+    return
+
+# Finds the mesh with the lowest number of points in the dataset
+# Random samples all other meshes to match the number of points
+def downsample(subject, filename, n):
+    
+        mesh = np.load(os.path.join(subject.path, filename))
+        
+        indices = np.random.choice(len(mesh), n, replace=False)
+        
+        downsampled_mesh = mesh[indices]
+        
+        basename = os.path.splitext(os.path.basename(filename))[0]
+            
+        downsampled_path = os.path.join(subject.path,(basename + '_downsampled.npy'))
+        
+        np.save(downsampled_path, downsampled_mesh)
+        
+        return downsampled_mesh
+    
+def get_samples(subject, filename):
+    
+    return len(np.load(os.path.join(subject.path, filename)))
+
+def random_sample_mesh_parallel(subject_list, filename):
+    
+    min_samples = np.inf
+    
+    for subject in subject_list:
+        
+        min_samples = min(min_samples, get_samples(subject, filename))
+        
+    with concurrent.futures.ProcessPoolExecutor() as executor:
+        
+        futures = []
+        
+        for subject in subject_list:
+
+            futures.append(executor.submit(downsample, subject, filename, min_samples))
+            
+        for future in concurrent.futures.as_completed(futures):
+            
+            result = future.result()
+            
+            print(np.shape(result))
+            
+            print(len(result))
+            
+            display_mesh(result, 50)
     
     return
