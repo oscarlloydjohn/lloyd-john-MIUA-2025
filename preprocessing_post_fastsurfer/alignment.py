@@ -7,8 +7,8 @@ import concurrent.futures
 import shutil
 
 # Custom modules
-from vis import *
-from extraction import *
+from .vis import *
+from .extraction import *
 
 # Performs brain extraction using the orig_nu.mgz and mask.mgz of the subject by multiplying the mask with the image
 def extract_brain(orig_file, mask_file):

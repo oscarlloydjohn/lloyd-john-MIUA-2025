@@ -6,7 +6,7 @@ import pandas as pd
 import concurrent.futures
 
 # Custom modules
-from vis import *
+from .vis import *
 
 # Extracts brain regions using their number label found from freesurfer LUT
 def extract_region(subject, values_list, brain, aparc, is_aligned=False):

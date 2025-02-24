@@ -5,7 +5,7 @@ import numpy as np
 import concurrent.futures
 
 # Custom modules
-from vis import *
+from .vis import *
 
 # Finds the bounding box of the image data
 def bounding_box(image_array):

@@ -17,7 +17,7 @@ from mpl_toolkits.mplot3d import Axes3D
 from skimage import measure
 
 # Custom modules
-from vis import *
+from .vis import *
 
 def volume_to_mesh(subject, fname_or_attribute):
     
