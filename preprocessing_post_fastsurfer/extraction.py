@@ -32,7 +32,7 @@ def extract_region(subject, values_list, brain, aparc, is_aligned=False):
     extracted_region = image_array * filtered_array
 
     # Look up the name of the region for the filename
-    lut_path = "/uolstore/home/student_lnxhome01/sc22olj/Compsci/year3/individual-project-COMP3931/individual-project-sc22olj/preprocessing/post-fastsurfer/FreeSurferColorLUT.txt"
+    lut_path = "/uolstore/home/student_lnxhome01/sc22olj/Compsci/year3/individual-project-COMP3931/individual-project-sc22olj/preprocessing_post_fastsurfer/FreeSurferColorLUT.txt"
     
     lut = pd.read_csv(lut_path, delimiter='\s+', comment='#', header=None)
     
