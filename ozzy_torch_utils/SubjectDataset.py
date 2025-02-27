@@ -78,7 +78,9 @@ class SubjectDataset(Dataset):
             subject_list.extend(label_subgroups[label])
             
         # Shuffle in case of ordering in directory
-        self.subject_list = random.shuffle(subject_list)
+        random.shuffle(subject_list)
+        
+        self.subject_list = subject_list
 
     def __len__(self):
         
