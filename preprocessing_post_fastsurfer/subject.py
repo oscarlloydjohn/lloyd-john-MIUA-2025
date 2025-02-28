@@ -2,12 +2,13 @@ import os
 import pandas as pd
 import glob
 import xmltodict
+from pprint import pprint
 
 class Subject:
     
     # Constructor assumes that the directory has already been processed in the specific format using fastsurfer
     # See preprocess.py
-    def __init__(self, path):
+    def __init__(self, path, metadata_df):
         
         # Existing before object creation
         self.path = path
@@ -17,6 +18,8 @@ class Subject:
         self.mask = os.path.join(path, "mri/mask.mgz")
         
         self.aparc = os.path.join(path, "mri/aparc.DKTatlas+aseg.deep.mgz")
+        
+        
         
         xml_files = glob.glob(os.path.join(path, "*.xml"))
         
@@ -63,7 +66,21 @@ class Subject:
 def find_subjects(data_path):
     
     subject_list = []
+    
+    csv_list = glob.glob(os.path.join(data_path, "*.csv"))
 
+    # Read all CSVs into a list and concatenate
+    metadata_df = pd.concat([pd.read_csv(csv) for csv in csv_list], ignore_index=True)
+    
+    # Find and print duplicates, drop the first
+    duplicates = metadata_df[metadata_df.duplicated(subset='Image Data ID', keep=False)]
+    
+    if not duplicates.empty:
+        
+        pprint(duplicates)
+        
+        metadata_df = metadata_df.drop_duplicates(subset='Image Data ID', keep='first')
+    
     for item in os.listdir(data_path):
         
         subject_path = os.path.join(data_path, item)
@@ -83,6 +100,8 @@ def find_subjects(data_path):
                 # If both orig.mgz and mask.mgz exist, create object
                 if os.path.isfile(orig_file) and os.path.isfile(mask_file):
                     
-                    subject_list.append(Subject(subject_path))
+                    print(subject_path[-6])
+                    
+                    subject_list.append(Subject(subject_path, metadata_df))
 
     return subject_list
