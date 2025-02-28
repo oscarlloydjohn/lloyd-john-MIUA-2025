@@ -8,9 +8,10 @@ class Subject:
     
     # Constructor assumes that the directory has already been processed in the specific format using fastsurfer
     # See preprocess.py
-    def __init__(self, path, metadata_df):
+    def __init__(self, path, subject_metadata):
         
         # Existing before object creation
+        
         self.path = path
         
         self.orig_nu = os.path.join(path, "mri/orig_nu.mgz")
@@ -19,20 +20,14 @@ class Subject:
         
         self.aparc = os.path.join(path, "mri/aparc.DKTatlas+aseg.deep.mgz")
         
+        self.subject_metadata = subject_metadata
         
-        
-        xml_files = glob.glob(os.path.join(path, "*.xml"))
-        
-        self.xml_path = xml_files[0] if xml_files else None
-        
-        with open(self.xml_path, 'r') as file:
-            
-                self.xml_df = xmltodict.parse(file.read())
-
         # Manually assign the column headers
         header = ['ColHeaders', 'Index', 'SegId', 'NVoxels', 'Volume_mm3', 'StructName', 'normMean', 'normStdDev', 'normMin', 'normMax', 'normRange']
         
         self.aseg_stats = pd.read_csv(os.path.join(path, 'stats/aseg+DKT.stats'), delimiter='\s+', comment='#', header=None, names=header)
+        
+        
         
         # Existing after object creation
         
@@ -56,13 +51,14 @@ class Subject:
         
         self.brain_aligned_cropped = brain_aligned_cropped if os.path.isfile(brain_aligned_cropped) else None
         
-        # NB specific regions e.g hippocampus are not stored in the object. Access them using their path from the aux file list
+        # NB specific regions e.g hippocampus are not stored in the object. Access them using their path directly
         
         # Set of all files for convenience
         self.aux_file_list = {f for f in os.listdir(path) if os.path.isfile(os.path.join(path, f))}
         
         
 # Searches data_path for subject directories and creates an object for each of them
+# NB subjects are actually 'images', there can be images for a given subject which are individual objects
 def find_subjects(data_path):
     
     subject_list = []
@@ -70,16 +66,21 @@ def find_subjects(data_path):
     csv_list = glob.glob(os.path.join(data_path, "*.csv"))
 
     # Read all CSVs into a list and concatenate
-    metadata_df = pd.concat([pd.read_csv(csv) for csv in csv_list], ignore_index=True)
+    cohort_df = pd.concat([pd.read_csv(csv) for csv in csv_list], ignore_index=True)
     
-    # Find and print duplicates, drop the first
-    duplicates = metadata_df[metadata_df.duplicated(subset='Image Data ID', keep=False)]
+    # Drop duplicate rows
+    cohort_df = cohort_df.drop_duplicates(keep='first')
+    
+    # Find duplicate image IDs
+    duplicates = cohort_df[cohort_df.duplicated(subset='Image Data ID', keep=False)]
     
     if not duplicates.empty:
         
+        print("Error: duplicate image IDs in CSV")
+        
         pprint(duplicates)
         
-        metadata_df = metadata_df.drop_duplicates(subset='Image Data ID', keep='first')
+        return
     
     for item in os.listdir(data_path):
         
@@ -100,8 +101,18 @@ def find_subjects(data_path):
                 # If both orig.mgz and mask.mgz exist, create object
                 if os.path.isfile(orig_file) and os.path.isfile(mask_file):
                     
-                    print(subject_path[-6])
+                    # Slice the string after the last underscore to get the image ID
+                    image_id = item[item.rfind('_') + 1:]
                     
-                    subject_list.append(Subject(subject_path, metadata_df))
+                    # Get the subject's row using image ID
+                    subject_metadata = cohort_df.loc[cohort_df['Image Data ID'] == image_id]
+                    
+                    if subject_metadata.empty:
+                        
+                        print("Error: Image ID not found")
+                        
+                        return
+                    
+                    subject_list.append(Subject(subject_path, subject_metadata))
 
     return subject_list

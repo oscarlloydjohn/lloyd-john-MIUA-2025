@@ -20,6 +20,7 @@ import matplotlib.pyplot as plt
 from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay, classification_report, precision_score, recall_score, accuracy_score, roc_auc_score
 from collections import Counter
 import random
+import pandas as pd
 
 # Custom modules
 from preprocessing_post_fastsurfer.subject import *
@@ -53,7 +54,7 @@ class SubjectDataset(Dataset):
             
         for subject in find_subjects(data_path):
             
-            label = subject.xml_df['idaxs']['project']['subject']['researchGroup']
+            label = subject.subject_metadata['Group'].iloc[0]
             
             if label in selected_labels:
                 
@@ -108,13 +109,14 @@ class SubjectDataset(Dataset):
         
         """REGION VOLUME STATS"""
         
+        # Need to process stats as cannot put dataframe as tensor 
         aseg_stats = subject.aseg_stats
         
         
         """SUBJECT INFO - NB NOT COMPLETE WITH SCORES, NEED TO PARSE XML"""
     
-        # Info from subject XML
-        subject_dict = subject.xml_df
+        # Info from subject dataframe
+        subject_metadata = subject.subject_metadata
         
         # Convert research group disease label str to number for pytorch
         if len(self.selected_labels) == 3:
@@ -135,39 +137,19 @@ class SubjectDataset(Dataset):
 
         
         # Get the value of the mapping, -1 if not found
-        research_group = mapping.get(subject_dict['idaxs']['project']['subject']['researchGroup'], -1)
-        
-        visit_identifier = subject_dict['idaxs']['project']['subject']['visit']['visitIdentifier']
-        
-        sex = subject_dict['idaxs']['project']['subject']['subjectSex']
-        
-        age = subject_dict['idaxs']['project']['subject']['study']['subjectAge']
-        
-        weight = subject_dict['idaxs']['project']['subject']['study']['weightKg']
-        
-        apoe_a1 = subject_dict['idaxs']['project']['subject']['subjectInfo'][0]['#text']
-        
-        apoe_a2 = subject_dict['idaxs']['project']['subject']['subjectInfo'][1]['#text']
-            
-        
-        # Scores
-        
+        research_group = mapping.get(subject_metadata['Group'].iloc[0], -1)
 
-        # Return a dictionary with your data
+        # Return dict with data, this is filtered by collate_fn
         return {
             'brain': brain,
             'hcampus_vox': hcampus_vox,
             'hcampus_vox_aligned': hcampus_vox_aligned,
             'hcampus_pointcloud': hcampus_pointcloud,
             'hcampus_pointcloud_aligned': hcampus_pointcloud_aligned,
-            'aseg_stats': aseg_stats,
+            #'aseg_stats': aseg_stats, # Cannot convert dataframe to tensor, need to process
             'research_group': research_group,
-            'visit_identifier': visit_identifier,
-            'sex': sex,
-            'age': age,
-            'weight': weight,
-            'apoe_a1': apoe_a1,
-            'apoe_a2': apoe_a2,
+            'sex': subject_metadata['Sex'].iloc[0],
+            'age': subject_metadata['Age'].iloc[0],
         }
         
     def load_mri_to_tensor(self, path):
