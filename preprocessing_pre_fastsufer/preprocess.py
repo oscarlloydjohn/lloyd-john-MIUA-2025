@@ -140,7 +140,7 @@ def move_nii(data_path, filename):
         
     return
 
-def batch_run(data_path, nii_list, container_path, license_path, nii_to_mgz):
+def batch_run(data_path, nii_list, container_path, license_path, nii_to_mgz, keep_orig):
     
     # Read the completed.txt file to get a list of already processed files
     completed_files = set()
@@ -168,7 +168,13 @@ def batch_run(data_path, nii_list, container_path, license_path, nii_to_mgz):
             
             process_file(data_path, file, license_path, container_path, 12)
             
-            move_nii(data_path, file)
+            if keep_orig:
+            
+                move_nii(data_path, file)
+                
+            else:
+                
+                os.remove(os.path.join(data_path, file))
             
             if nii_to_mgz:
                 
@@ -188,6 +194,7 @@ def batch_run(data_path, nii_list, container_path, license_path, nii_to_mgz):
 parser = argparse.ArgumentParser(description="Script for batch processing nii files using fastsurfer")
 
 parser.add_argument('--compact_dir', action='store_true')
+parser.add_argument('--keep_orig', action='store_true')
 parser.add_argument('--mgz_to_nii', action='store_true')
 parser.add_argument('--remove_files_containing', type=str, required=False)
 parser.add_argument('--data_path', type=str, required=True)
@@ -203,4 +210,4 @@ if args.remove_files_containing:
     remove_files_containing(args.data_path, args.remove_files_containing)
 
 # Perform batch run with other parameters
-batch_run(args.data_path, list_nii(args.data_path), args.container_path, args.license_path, args.mgz_to_nii)
+batch_run(args.data_path, list_nii(args.data_path), args.container_path, args.license_path, args.mgz_to_nii, args.keep_orig)
