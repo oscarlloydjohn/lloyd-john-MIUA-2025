@@ -30,13 +30,17 @@ def volume_to_mesh(subject, fname_or_attribute):
         
         image_array = nibabel.load(getattr(subject, fname_or_attribute)).get_fdata()
     
-    verts, faces, _, _ = measure.marching_cubes(image_array)
+    verts, faces, normals, values = measure.marching_cubes(image_array)
     
     fname = os.path.splitext(os.path.basename(fname_or_attribute))[0]
     
-    np.save(os.path.join(subject.path, fname + '_mesh.npy'), verts)
+    np.save(os.path.join(subject.path, fname + '_verts.npy'), verts)
     
-    return verts
+    np.save(os.path.join(subject.path, fname + '_faces.npy'), faces)
+    
+    np.save(os.path.join(subject.path, fname + '_normals.npy'), normals)
+    
+    return verts, faces, normals, values
 
 def volume_to_mesh_parallel(subject_list, fname_or_attribute, downsample_factor=50):
     
@@ -50,19 +54,19 @@ def volume_to_mesh_parallel(subject_list, fname_or_attribute, downsample_factor=
             
         for future in concurrent.futures.as_completed(futures):
             
-            display_mesh(future.result(), downsample_factor)
+            display_mesh(future.result()[0], downsample_factor)
     
     return
 
-# Finds the mesh with the lowest number of points in the dataset
-# Random samples all other meshes to match the number of points
-def downsample(subject, filename, n):
+# Finds the cloud with the lowest number of points in the dataset
+# Random samples all other cloud to match the number of points
+def downsample_cloud(subject, filename, n):
     
-        mesh = np.load(os.path.join(subject.path, filename))
+        cloud = np.load(os.path.join(subject.path, filename))
         
-        indices = np.random.choice(len(mesh), n, replace=False)
+        indices = np.random.choice(len(cloud), n, replace=False)
         
-        downsampled_mesh = mesh[indices]
+        downsampled_mesh = cloud[indices]
         
         basename = os.path.splitext(os.path.basename(filename))[0]
             
@@ -74,9 +78,9 @@ def downsample(subject, filename, n):
     
 def get_samples(subject, filename):
     
-    return len(np.load(os.path.join(subject.path, filename)))
+    return len(np.load(os.path.join(subject.path, filename), allow_pickle=True))
 
-def random_sample_mesh_parallel(subject_list, filename):
+def random_sample_cloud_parallel(subject_list, filename):
     
     min_samples = np.inf
     
@@ -90,7 +94,7 @@ def random_sample_mesh_parallel(subject_list, filename):
         
         for subject in subject_list:
 
-            futures.append(executor.submit(downsample, subject, filename, min_samples))
+            futures.append(executor.submit(downsample_cloud, subject, filename, min_samples))
             
         for future in concurrent.futures.as_completed(futures):
             
