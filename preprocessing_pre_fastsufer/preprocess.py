@@ -3,6 +3,7 @@ import subprocess
 import shutil
 from concurrent.futures import ThreadPoolExecutor
 import argparse
+import sys
 
 # Deletes all files that contain a string in their name
 def remove_files_containing(data_path, string):
@@ -57,7 +58,7 @@ def batch_mgz_to_nii(data_path, batchname):
     with ThreadPoolExecutor() as executor:
         
         executor.map(convert_mgz_to_nii, mgz_files)
-    
+    required=''
     print("All .mgz files have been converted.")
     
     return
@@ -197,17 +198,23 @@ parser.add_argument('--compact_dir', action='store_true')
 parser.add_argument('--keep_orig', action='store_true')
 parser.add_argument('--mgz_to_nii', action='store_true')
 parser.add_argument('--remove_files_containing', type=str, required=False)
-parser.add_argument('--data_path', type=str, required=True)
-parser.add_argument('--license_path', type=str, required=True)
-parser.add_argument('--container_path', type=str, required=True)
+
+# Extra processing args are required if process is passed
+parser.add_argument('--process', action='store_true')
+parser.add_argument('--data_path', type=str, required='--process' in sys.argv)
+parser.add_argument('--license_path', type=str, required='--process' in sys.argv)
+parser.add_argument('--container_path', type=str, required='--process' in sys.argv)
 
 args = parser.parse_args()
 
 if args.compact_dir:
+    
     compact_dir(args.data_path)
 
 if args.remove_files_containing:
+    
     remove_files_containing(args.data_path, args.remove_files_containing)
 
-# Perform batch run with other parameters
-batch_run(args.data_path, list_nii(args.data_path), args.container_path, args.license_path, args.mgz_to_nii, args.keep_orig)
+if args.process:
+    
+    batch_run(args.data_path, list_nii(args.data_path), args.container_path, args.license_path, args.mgz_to_nii, args.keep_orig)
