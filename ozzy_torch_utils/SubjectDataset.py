@@ -1,26 +1,15 @@
 
 # Torch
 import torch
-from torch import nn
-from torch.utils.data import Dataset, DataLoader, random_split
+from torch.utils.data import Dataset
 import torch
-import torch.optim as optim
 from torcheval.metrics import *
 
-# Benny pointnet
-from pointnet2_benny import pointnet2_cls_msg
-from pointnet2_benny import provider
-
 # Other
-from tqdm import tqdm
 import nibabel
 import os
 import numpy as np
-import matplotlib.pyplot as plt
-from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay, classification_report, precision_score, recall_score, accuracy_score, roc_auc_score
-from collections import Counter
 import random
-import pandas as pd
 
 # Custom modules
 from preprocessing_post_fastsurfer.subject import *
@@ -109,11 +98,14 @@ class SubjectDataset(Dataset):
         
         """REGION VOLUME STATS"""
         
-        # Need to process stats as cannot put dataframe as tensor 
-        aseg_stats = subject.aseg_stats
+        # Get volume column from df
+        volume_col = subject.aseg_stats['Volume_mm3']
+        
+        # Normalise volumes, scale factor to avoid underflow
+        volume_col_normalised = volume_col / volume_col.sum() * 1000
         
         
-        """SUBJECT INFO - NB NOT COMPLETE WITH SCORES, NEED TO PARSE XML"""
+        """SUBJECT INFO - NB NOT COMPLETE WITH SCORES"""
     
         # Info from subject dataframe
         subject_metadata = subject.subject_metadata
@@ -146,10 +138,8 @@ class SubjectDataset(Dataset):
             'hcampus_vox_aligned': hcampus_vox_aligned,
             'hcampus_pointcloud': hcampus_pointcloud,
             'hcampus_pointcloud_aligned': hcampus_pointcloud_aligned,
-            #'aseg_stats': aseg_stats, # Cannot convert dataframe to tensor, need to process
+            'volumes': np.array(volume_col_normalised), # Cannot convert dataframe to tensor, need to process
             'research_group': research_group,
-            'sex': subject_metadata['Sex'].iloc[0],
-            'age': subject_metadata['Age'].iloc[0],
         }
         
     def load_mri_to_tensor(self, path):

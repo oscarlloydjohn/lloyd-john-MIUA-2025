@@ -1,19 +1,8 @@
 import nibabel
 import nibabel.affines
-from PIL import Image
 import os
-import fnmatch
 import numpy as np
-import ants
 import concurrent.futures
-import pandas as pd
-import glob
-import xml.etree.ElementTree as ET
-import xmltodict
-import shutil
-import pprint
-import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D
 from skimage import measure
 
 # Custom modules
@@ -42,7 +31,7 @@ def volume_to_mesh(subject, fname_or_attribute):
     
     return verts, faces, normals, values
 
-def volume_to_mesh_parallel(subject_list, fname_or_attribute, downsample_factor=50):
+def volume_to_mesh_parallel(subject_list, fname_or_attribute, downsample_factor=50, display = True):
     
     with concurrent.futures.ProcessPoolExecutor() as executor:
         
@@ -54,7 +43,11 @@ def volume_to_mesh_parallel(subject_list, fname_or_attribute, downsample_factor=
             
         for future in concurrent.futures.as_completed(futures):
             
-            display_mesh(future.result()[0], downsample_factor)
+            mesh = future.result()[0]
+            
+            if display:
+                
+                display_mesh(mesh, downsample_factor)
     
     return
 
@@ -80,7 +73,7 @@ def get_samples(subject, filename):
     
     return len(np.load(os.path.join(subject.path, filename), allow_pickle=True))
 
-def random_sample_cloud_parallel(subject_list, filename):
+def random_sample_cloud_parallel(subject_list, filename, display=True):
     
     min_samples = np.inf
     
@@ -100,10 +93,12 @@ def random_sample_cloud_parallel(subject_list, filename):
             
             result = future.result()
             
-            print(np.shape(result))
+            if display:
             
-            print(len(result))
-            
-            display_mesh(result, 50)
+                print(np.shape(result))
+                
+                print(len(result))
+                
+                display_mesh(result, 50)
     
     return

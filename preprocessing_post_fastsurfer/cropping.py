@@ -7,16 +7,6 @@ import concurrent.futures
 # Custom modules
 from .vis import *
 
-# Finds the bounding box of the image data
-def bounding_box(image_array):
-
-    non_zero_indices = np.nonzero(image_array)
-    
-    min_x, min_y, min_z = np.min(non_zero_indices[0]), np.min(non_zero_indices[1]), np.min(non_zero_indices[2])
-    max_x, max_y, max_z = np.max(non_zero_indices[0]), np.max(non_zero_indices[1]), np.max(non_zero_indices[2])
-    
-    return (min_x, min_y, min_z, max_x, max_y, max_z)
-
 # Not for use with images of range greater than 0-255 as saves as uint8
 def crop(subject, relative_path, max_bbox, is_full_brain):
     
@@ -52,10 +42,17 @@ def crop(subject, relative_path, max_bbox, is_full_brain):
     
     return cropped_image
 
-# Crop images to the minimum size whilst retaining whole dataset
-# Can only be done on the whole dataset as the dataset has to be checked before
-# Cropping is performed in parallel
-def crop_subjects_parallel(subject_list, relative_path, is_full_brain=False, display_3d=False):
+# Finds the bounding box of the image data
+def bounding_box(image_array):
+
+    non_zero_indices = np.nonzero(image_array)
+    
+    min_x, min_y, min_z = np.min(non_zero_indices[0]), np.min(non_zero_indices[1]), np.min(non_zero_indices[2])
+    max_x, max_y, max_z = np.max(non_zero_indices[0]), np.max(non_zero_indices[1]), np.max(non_zero_indices[2])
+    
+    return (min_x, min_y, min_z, max_x, max_y, max_z)
+
+def get_max_bbox(subject_list, relative_path):
     
     max_bbox = (np.inf, np.inf, np.inf, -np.inf, -np.inf, -np.inf)
     
@@ -76,6 +73,13 @@ def crop_subjects_parallel(subject_list, relative_path, is_full_brain=False, dis
             max(max_bbox[5], max_z)
         )
         
+    return max_bbox
+
+# Crop images to the minimum size whilst retaining whole dataset
+# Can only be done on the whole dataset as the dataset has to be checked before
+# Cropping is performed in parallel
+def crop_subjects_parallel(subject_list, relative_path, max_bbox, is_full_brain=False, display=False, display_3d=False):
+        
     with concurrent.futures.ProcessPoolExecutor() as executor:
         
         futures = []
@@ -90,7 +94,7 @@ def crop_subjects_parallel(subject_list, relative_path, is_full_brain=False, dis
                 
                 display_image_3d(future.result(), 7)
             
-            else:
+            elif display:
                 
                 display_image(future.result())
             
