@@ -4,6 +4,7 @@ from PIL import Image
 import numpy as np
 from IPython.display import display
 import pyvista as pv
+import matplotlib.pyplot as plt
 
 # Load an image into nibabel
 def load_image(data_path, filename):
@@ -69,8 +70,20 @@ def display_array_3d(array, downsample_factor, mode='interactive'):
 def display_cloud(cloud, mode='interactive'):
 
     mesh = pv.PolyData(cloud)
+    
+    if mode == 'mpl':
 
-    if mode == 'preview':
+        fig = plt.figure()
+        
+        ax = fig.add_subplot(111, projection='3d')
+        
+        ax.scatter(cloud[:, 0], cloud[:, 1], cloud[:, 2], c='b', s=1)  # Small point size
+        
+        plt.show()
+        
+        return
+
+    elif mode == 'preview':
         
         '''plotter = pv.ImageData(window_size=[100, 100], notebook=False)
         
@@ -112,68 +125,3 @@ def display_mesh(mesh_dict, mode='interactive'):
     plotter.show()
         
     return
-
-'''
-def display_array_3d(array, downsample_factor, mode='interactive'):
-    
-    if mode == 'preview':
-        plotter = pv.Plotter(off_screen=True, window_size=[100, 100])
-        
-    elif mode == 'interactive':
-        plotter = pv.Plotter()
-    
-    # Downsample the array
-    array = array[::downsample_factor, ::downsample_factor, ::downsample_factor]
-    
-    # Create ImageData object
-    image_data = pv.ImageData(dimensions=np.array(array.shape) + 1)
-    image_data.cell_data["values"] = array.flatten(order="F")
-    
-    # Apply threshold
-    grid_thresh = image_data.threshold(1)
-    
-    plotter.add_mesh(grid_thresh, show_edges=True)
-    plotter.set_background("white")
-    plotter.show()
-    
-    return
-
-def display_cloud(cloud, mode='interactive'):
-
-    mesh = pv.PolyData(cloud)
-
-    if mode == 'preview':
-        plotter = pv.Plotter(off_screen=True, window_size=[100, 100])
-        plotter.enable_anti_aliasing(False)
-        
-    elif mode == 'interactive':
-        plotter = pv.Plotter()
-    
-    plotter.add_mesh(mesh, color='blue', point_size=5, render_points_as_spheres=True)
-    plotter.set_background("white")
-    plotter.show()
-    
-    return
-
-def display_mesh(mesh_dict, mode='interactive'):
-    
-    if mode == 'preview':
-        plotter = pv.Plotter(off_screen=True, window_size=[100, 100])
-        plotter.enable_anti_aliasing(False)
-        
-    elif mode == 'interactive':
-        plotter = pv.Plotter()
-    
-    faces = mesh_dict['faces']
-    
-    # Convert faces to the correct format for PyVista
-    faces_pv = np.hstack([np.full((faces.shape[0], 1), 3), faces])
-    
-    # Create a PolyData mesh from vertices and faces
-    mesh = pv.PolyData(mesh_dict['verts'], faces_pv)
-    
-    plotter.add_mesh(mesh, color="lightblue", show_edges=True)
-    plotter.set_background("white")
-    plotter.show()
-    
-    return'''

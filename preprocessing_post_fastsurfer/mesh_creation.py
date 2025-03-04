@@ -46,7 +46,7 @@ def volume_to_mesh_parallel(subject_list, fname_or_attribute, downsample_factor=
             
             if display:
                 
-                display_mesh(mesh, downsample_factor)
+                display_mesh(mesh, downsample_factor, mode='preview')
     
     return
     
@@ -98,6 +98,6 @@ def downsample_cloud_parallel(subject_list, filename, num_samples, display=True)
             
             if display:
                 
-                display_cloud(cloud)
+                display_cloud(cloud, mode='mpl')
     
     return

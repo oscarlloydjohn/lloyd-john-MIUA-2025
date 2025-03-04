@@ -67,6 +67,6 @@ def extract_region_parallel(subject_list, values_list, brain_attribute, aparc_at
             
         for future in concurrent.futures.as_completed(futures):
             
-            display_image_3d(future.result(), 7)
+            display_image_3d(future.result(), 7, mode='preview')
             
     return
