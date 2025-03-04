@@ -4,6 +4,7 @@ import os
 import numpy as np
 import concurrent.futures
 from skimage import measure
+import open3d as o3d
 
 # Custom modules
 from .vis import *
@@ -49,8 +50,8 @@ def volume_to_mesh_parallel(subject_list, fname_or_attribute, downsample_factor=
     
     return
     
-# Return the minimum number points in the smallest pointcloud in the list
-def get_min_points(subject_list, filename):
+# Get the minimum number of vertices over all meshes in the list
+def get_min_cloud_points(subject_list, filename):
     
     min_samples = np.inf
     
@@ -60,23 +61,26 @@ def get_min_points(subject_list, filename):
     
     return min_samples
 
-def downsample_cloud(subject, filename, n):
-    
-        '''mesh = np.load(os.path.join(subject.path, filename))
-        
-        downsampled_cloud = cloud.uniform_down_sample(n=n)
-        
-        basename = os.path.splitext(os.path.basename(filename))[0]
-            
-        downsampled_path = os.path.join(subject.path,(basename + '_downsampled.npy'))
-        
-        np.save(downsampled_path, downsampled_cloud)
-        
-        return downsampled_cloud'''
-    
 # https://medium.com/towards-data-science/how-to-use-pointnet-for-3d-computer-vision-in-an-industrial-context-3568ba37327e
 # Farthest point sampling is suggested
 # NB used open3d as it natively supports this type of sampling
+def downsample_cloud(subject, filename, n):
+    
+    mesh_dict = np.load(os.path.join(subject.path, filename))
+    
+    cloud = o3d.geometry.PointCloud()
+    
+    cloud.points = o3d.utility.Vector3dVector(mesh_dict['verts'])
+
+    downsampled_cloud = np.asarray(cloud.farthest_point_down_sample(n).points)
+    
+    basename = os.path.splitext(os.path.basename(filename))[0]
+        
+    downsampled_path = os.path.join(subject.path,(basename + '_downsampledcloud.npy'))
+    
+    np.save(downsampled_path, downsampled_cloud)
+    
+    return downsampled_cloud
 
 def downsample_cloud_parallel(subject_list, filename, num_samples, display=True):
     
@@ -90,12 +94,10 @@ def downsample_cloud_parallel(subject_list, filename, num_samples, display=True)
             
         for future in concurrent.futures.as_completed(futures):
             
-            mesh = future.result()
+            cloud = future.result()
             
             if display:
-            
-                print(np.shape(mesh['verts']))
                 
-                display_mesh(mesh, 50)
+                display_cloud(cloud)
     
     return

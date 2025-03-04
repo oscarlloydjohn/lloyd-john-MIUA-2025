@@ -99,7 +99,7 @@ def init_subject(subject_path, cohort_df):
             image_id = subject_path[subject_path.rfind('_') + 1:]
             
             # Get the subject's row using image ID
-            subject_metadata = cohort_df.loc[cohort_df['Image Data ID'] == image_id]
+            subject_metadata = cohort_df.loc[cohort_df['Image Data ID'] == image_id].copy()
             
             if subject_metadata.empty:
                 
