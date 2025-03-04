@@ -2,6 +2,7 @@ import os
 import pandas as pd
 import glob
 from pprint import pprint
+import concurrent.futures
 
 class Subject:
     
@@ -55,12 +56,7 @@ class Subject:
         # Set of all files for convenience
         self.aux_file_list = {f for f in os.listdir(path) if os.path.isfile(os.path.join(path, f))}
         
-        
-# Searches data_path for subject directories and creates an object for each of them
-# NB subjects are actually 'images', there can be images for a given subject which are individual objects
-def find_subjects(data_path):
-    
-    subject_list = []
+def get_cohort_df(data_path):
     
     csv_list = glob.glob(os.path.join(data_path, "*.csv"))
 
@@ -81,37 +77,85 @@ def find_subjects(data_path):
         
         return
     
+    return cohort_df
+
+# Given a subject directory, if it contains the correct structure then initialise an object
+def init_subject(subject_path, cohort_df):
+        
+    # MRI directory of subject path (checking validity)
+    mri_path = os.path.join(subject_path, 'mri')
+    
+    # Check for MRI directory
+    if os.path.isdir(mri_path):
+        
+        orig_file = os.path.join(mri_path, 'orig_nu.mgz')
+        
+        mask_file = os.path.join(mri_path, 'mask.mgz')
+
+        # If both orig.mgz and mask.mgz exist, create object
+        if os.path.isfile(orig_file) and os.path.isfile(mask_file):
+            
+            # Slice the string after the last underscore to get the image ID
+            image_id = subject_path[subject_path.rfind('_') + 1:]
+            
+            # Get the subject's row using image ID
+            subject_metadata = cohort_df.loc[cohort_df['Image Data ID'] == image_id]
+            
+            if subject_metadata.empty:
+                
+                print("Error: Image ID not found")
+                
+                return
+            
+            return Subject(subject_path, subject_metadata)
+    
+    return None
+
+# Searches data_path for subject directories and creates an object for each of them
+# NB subjects are actually 'images', there can be images for a given subject which are individual objects
+def find_subjects_parallel(data_path):
+    
+    cohort_df = get_cohort_df(data_path)
+    
+    subject_list = []
+    
+    with concurrent.futures.ProcessPoolExecutor() as executor:
+        
+        futures = []
+        
+        for item in os.listdir(data_path):
+            
+            subject_path = os.path.join(data_path, item)
+            
+            if os.path.isdir(subject_path):
+                
+                futures.append(executor.submit(init_subject, subject_path, cohort_df))
+        
+        for future in concurrent.futures.as_completed(futures):
+            
+            result = future.result()
+            
+            if result is not None:
+                
+                subject_list.append(result)
+    
+    return subject_list
+        
+        
+# Searches data_path for subject directories and creates an object for each of them
+# NB subjects are actually 'images', there can be images for a given subject which are individual objects
+def find_subjects(data_path):
+    
+    cohort_df = get_cohort_df(data_path)
+    
+    subject_list = []
+    
     for item in os.listdir(data_path):
         
         subject_path = os.path.join(data_path, item)
         
         if os.path.isdir(subject_path):
-            
-            # MRI directory of subject path (checking validity)
-            mri_path = os.path.join(subject_path, 'mri')
-            
-            # Check for MRI directory
-            if os.path.isdir(mri_path):
-                
-                orig_file = os.path.join(mri_path, 'orig_nu.mgz')
-                
-                mask_file = os.path.join(mri_path, 'mask.mgz')
-
-                # If both orig.mgz and mask.mgz exist, create object
-                if os.path.isfile(orig_file) and os.path.isfile(mask_file):
                     
-                    # Slice the string after the last underscore to get the image ID
-                    image_id = item[item.rfind('_') + 1:]
-                    
-                    # Get the subject's row using image ID
-                    subject_metadata = cohort_df.loc[cohort_df['Image Data ID'] == image_id]
-                    
-                    if subject_metadata.empty:
-                        
-                        print("Error: Image ID not found")
-                        
-                        return
-                    
-                    subject_list.append(Subject(subject_path, subject_metadata))
+            subject_list.append(init_subject(subject_path, cohort_df))
 
     return subject_list

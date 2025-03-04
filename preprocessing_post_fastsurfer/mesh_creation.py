@@ -23,15 +23,13 @@ def volume_to_mesh(subject, fname_or_attribute):
     
     fname = os.path.splitext(os.path.basename(fname_or_attribute))[0]
     
-    np.save(os.path.join(subject.path, fname + '_verts.npy'), verts)
+    pathname = os.path.join(subject.path, fname + '_mesh.npz')
     
-    np.save(os.path.join(subject.path, fname + '_faces.npy'), faces)
+    np.savez(pathname, verts=verts, faces=faces, normals=normals, values=values)
     
-    np.save(os.path.join(subject.path, fname + '_normals.npy'), normals)
-    
-    return verts, faces, normals, values
+    return {"verts" : verts, "faces" : faces, "normals" : normals, "values" : values}
 
-def volume_to_mesh_parallel(subject_list, fname_or_attribute, downsample_factor=50, display = True):
+def volume_to_mesh_parallel(subject_list, fname_or_attribute, downsample_factor=50, display=True):
     
     with concurrent.futures.ProcessPoolExecutor() as executor:
         
@@ -43,62 +41,61 @@ def volume_to_mesh_parallel(subject_list, fname_or_attribute, downsample_factor=
             
         for future in concurrent.futures.as_completed(futures):
             
-            mesh = future.result()[0]
+            mesh = future.result()
             
             if display:
                 
                 display_mesh(mesh, downsample_factor)
     
     return
-
-# Finds the cloud with the lowest number of points in the dataset
-# Random samples all other cloud to match the number of points
-def downsample_cloud(subject, filename, n):
     
-        cloud = np.load(os.path.join(subject.path, filename))
-        
-        indices = np.random.choice(len(cloud), n, replace=False)
-        
-        downsampled_mesh = cloud[indices]
-        
-        basename = os.path.splitext(os.path.basename(filename))[0]
-            
-        downsampled_path = os.path.join(subject.path,(basename + '_downsampled.npy'))
-        
-        np.save(downsampled_path, downsampled_mesh)
-        
-        return downsampled_mesh
-    
-def get_samples(subject, filename):
-    
-    return len(np.load(os.path.join(subject.path, filename), allow_pickle=True))
-
-def random_sample_cloud_parallel(subject_list, filename, display=True):
+# Return the minimum number points in the smallest pointcloud in the list
+def get_min_points(subject_list, filename):
     
     min_samples = np.inf
     
     for subject in subject_list:
         
-        min_samples = min(min_samples, get_samples(subject, filename))
+        min_samples = min(min_samples, len(np.load(os.path.join(subject.path, filename), allow_pickle=True)['verts']))
+    
+    return min_samples
+
+def downsample_cloud(subject, filename, n):
+    
+        '''mesh = np.load(os.path.join(subject.path, filename))
         
+        downsampled_cloud = cloud.uniform_down_sample(n=n)
+        
+        basename = os.path.splitext(os.path.basename(filename))[0]
+            
+        downsampled_path = os.path.join(subject.path,(basename + '_downsampled.npy'))
+        
+        np.save(downsampled_path, downsampled_cloud)
+        
+        return downsampled_cloud'''
+    
+# https://medium.com/towards-data-science/how-to-use-pointnet-for-3d-computer-vision-in-an-industrial-context-3568ba37327e
+# Farthest point sampling is suggested
+# NB used open3d as it natively supports this type of sampling
+
+def downsample_cloud_parallel(subject_list, filename, num_samples, display=True):
+    
     with concurrent.futures.ProcessPoolExecutor() as executor:
         
         futures = []
         
         for subject in subject_list:
 
-            futures.append(executor.submit(downsample_cloud, subject, filename, min_samples))
+            futures.append(executor.submit(downsample_cloud, subject, filename, num_samples))
             
         for future in concurrent.futures.as_completed(futures):
             
-            result = future.result()
+            mesh = future.result()
             
             if display:
             
-                print(np.shape(result))
+                print(np.shape(mesh['verts']))
                 
-                print(len(result))
-                
-                display_mesh(result, 50)
+                display_mesh(mesh, 50)
     
     return

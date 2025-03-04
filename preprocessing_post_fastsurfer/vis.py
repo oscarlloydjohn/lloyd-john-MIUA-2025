@@ -5,6 +5,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 from IPython.display import display
+import pyvista as pv
 
 # Load an image into nibabel
 def load_image(data_path, filename):
@@ -44,37 +45,45 @@ def display_image_3d(image, downsample_factor):
     
     return
 
+
 def display_array_3d(array, downsample_factor):
     
     array = array[::downsample_factor, ::downsample_factor, ::downsample_factor]
     
-    fig = plt.figure()
+    grid = pv.ImageData()
     
-    ax = fig.add_subplot(111, projection='3d')
+    grid.dimensions = np.array(array.shape) + 1
     
-    print('plotting')
-
-    ax.voxels((array != 0), edgecolors='k')
-
-    plt.show()
+    grid.cell_data["values"] = array.flatten(order="F")
+    
+    grid_thresh = grid.threshold(1)
+    
+    grid_thresh.plot()
     
     return 
 
-def display_mesh(verts, downsample_factor):
-    
-    num_samples = len(verts) // downsample_factor
+def display_cloud(cloud):
 
-    # Randomly sample the vertices (without replacement)
-    sampled_indices = np.random.choice(len(verts), size=num_samples, replace=False)
-    
-    downsampled_verts = verts[sampled_indices]
+    mesh = pv.PolyData(cloud)
 
-    fig = plt.figure()
+    plotter = pv.Plotter()
     
-    ax = fig.add_subplot(111, projection='3d')
+    plotter.add_mesh(cloud, color="lightblue", show_edges=True)
     
-    ax.scatter(downsampled_verts[:, 0], downsampled_verts[:, 1], downsampled_verts[:, 2], c='b', s=1)  # Small point size
+    plotter.set_background("white")
     
-    plt.show()
+    plotter.show()
+
+def display_mesh(mesh_dict, downsample_factor, mode='mpl'):
+
+    plotter = pv.Plotter()
+
+    mesh = pv.PolyData(mesh_dict['verts'], mesh_dict['faces'])
     
+    plotter.add_mesh(mesh, color="lightblue", show_edges=True)
+    
+    plotter.set_background("white")
+    
+    plotter.show()
+        
     return
