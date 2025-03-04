@@ -41,7 +41,7 @@ class SubjectDataset(Dataset):
         # Separate these into individual lists
         label_subgroups = {label: [] for label in selected_labels}
             
-        for subject in find_subjects(data_path):
+        for subject in find_subjects_parallel(data_path):
             
             label = subject.subject_metadata['Group'].iloc[0]
             
@@ -88,12 +88,19 @@ class SubjectDataset(Dataset):
         
         # NB these are all cropped
         hcampus_vox = self.load_mri_to_tensor(os.path.join(subject.path, 'Left-Hippocampus_Right-Hippocampus_cropped.nii'))
-        
-        hcampus_vox_aligned = self.load_mri_to_tensor(os.path.join(subject.path, 'Left-Hippocampus_Right-Hippocampus_aligned_cropped.nii'))
     
-        hcampus_pointcloud = torch.tensor(np.load(os.path.join(subject.path, 'Left-Hippocampus_Right-Hippocampus_cropped_verts_downsampled.npy')), dtype=torch.float32)
-                                          
-        hcampus_pointcloud_aligned = torch.tensor(np.load(os.path.join(subject.path, 'Left-Hippocampus_Right-Hippocampus_aligned_cropped_verts_downsampled.npy')), dtype=torch.float32)
+        hcampus_pointcloud = torch.tensor(np.load(os.path.join(subject.path, 'Left-Hippocampus_Right-Hippocampus_cropped_mesh_downsampledcloud.npy')), dtype=torch.float32)
+        
+        # Won't always have aligned versions
+        try:
+                               
+            hcampus_vox_aligned = self.load_mri_to_tensor(os.path.join(subject.path, 'Left-Hippocampus_Right-Hippocampus_aligned_cropped.nii'))                        
+                    
+            hcampus_pointcloud_aligned = torch.tensor(np.load(os.path.join(subject.path, 'Left-Hippocampus_Right-Hippocampus_aligned_cropped_mesh_downsampledcloud.npy')), dtype=torch.float32)
+            
+        except:
+            
+            hcampus_vox_aligned, hcampus_pointcloud_aligned = None, None
         
         
         """REGION VOLUME STATS"""
