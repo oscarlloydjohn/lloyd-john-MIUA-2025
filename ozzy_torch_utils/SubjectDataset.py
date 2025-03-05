@@ -16,7 +16,7 @@ from preprocessing_post_fastsurfer.subject import *
 from preprocessing_post_fastsurfer.vis import *
 
 class SubjectDataset(Dataset):
-    def __init__(self, data_path, selected_labels, downsample_majority=True):
+    def __init__(self, data_path, selected_labels, downsample_majority=True, single_img_per_subject=False):
         
         # Check format of selected labels
         if len(selected_labels) < 2 or len(selected_labels) > 3:
@@ -35,25 +35,36 @@ class SubjectDataset(Dataset):
         
         self.num_classes = len(selected_labels)
         
-        subject_list = []
+        initial_subject_list = find_subjects_parallel(data_path)
         
+        final_subject_list = []
+        
+        # Filter the list to only include one image per subject
+        if single_img_per_subject:
+            
+            random.shuffle(initial_subject_list)
+            
+            filtered_subjects = {subject.subject_metadata['Subject'].iloc[0]: subject for subject in initial_subject_list}
+
+            initial_subject_list = list(filtered_subjects.values())
+            
         # Include only the subjects that have a label of interest
         # Separate these into individual lists
         label_subgroups = {label: [] for label in selected_labels}
             
-        for subject in find_subjects_parallel(data_path):
+        for subject in initial_subject_list:
             
             label = subject.subject_metadata['Group'].iloc[0]
             
             if label in selected_labels:
                 
                 label_subgroups[label].append(subject)
-                
-        # Size of smallest label subgroup
-        min_class_size = min(len(label_subgroups[label]) for label in selected_labels)
             
         # Downsample the list to reduce class imbalance
         if downsample_majority:
+            
+            # Size of smallest label subgroup
+            min_class_size = min(len(label_subgroups[label]) for label in selected_labels)
             
             for label in selected_labels:
                 
@@ -65,12 +76,12 @@ class SubjectDataset(Dataset):
         # Append the subject list with each label's subgroup
         for label in selected_labels:
             
-            subject_list.extend(label_subgroups[label])
+            final_subject_list.extend(label_subgroups[label])
             
         # Shuffle in case of ordering in directory
-        random.shuffle(subject_list)
+        random.shuffle(final_subject_list)
         
-        self.subject_list = subject_list
+        self.subject_list = final_subject_list
 
     def __len__(self):
         
