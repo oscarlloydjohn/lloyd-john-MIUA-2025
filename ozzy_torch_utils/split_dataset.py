@@ -1,7 +1,7 @@
 # Torch
 from torch.utils.data import random_split, Subset
-from itertools import groupby
 import random
+import numpy as np
 
 # When prevent_id_leakage is True, no subject id can be split across test and train
 # Note that this means that the train/test split may not be exact because the split is
@@ -64,5 +64,6 @@ def split_dataset(dataset, test_size=0.2, prevent_id_leakage=True):
         train_size = dataset_size - test_size
         
         train_dataset, test_dataset = random_split(dataset, [train_size, test_size])
+        
     
     return train_dataset, test_dataset

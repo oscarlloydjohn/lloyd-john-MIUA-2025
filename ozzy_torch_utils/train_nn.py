@@ -117,7 +117,7 @@ def train_nn(model_parameters, train_dataloader, test_dataloader):
                 # NB could use lambda function for label conversion
                 if "pointnet" in f"{model_parameters.model.__class__.__module__}.{model_parameters.model.__class__.__name__}":
                 
-                    running_loss += model_parameters.criterion(output, labels, None).item() * points.size(0)
+                    running_loss += model_parameters.criterion(pred_probability, labels, None).item() * points.size(0)
                 
                     # Apply exponent as the output of the model is log softmax
                     pred_probability = torch.exp(pred_probability)
@@ -132,9 +132,11 @@ def train_nn(model_parameters, train_dataloader, test_dataloader):
                 # Update metrics
                 [metric.update(pred_labels, labels) for metric in [conf_matrix, accuracy, f1, precision, recall]]
                 
-                metrics["roc_curves"].append(roc_curve(labels, pred_probability, pos_label=1))
+                print(labels.cpu())
                 
-                metrics["roc_aucs"].append(roc_auc_score(labels, pred_probability))
+                metrics["roc_curves"].append(roc_curve(labels.cpu(), pred_probability[:, 1].cpu(), pos_label=1, drop_intermediate=False))
+                
+                metrics["roc_aucs"].append(roc_auc_score(labels.cpu(), pred_probability[:, 1].cpu()))
 
         end_time = datetime.now()
                 
