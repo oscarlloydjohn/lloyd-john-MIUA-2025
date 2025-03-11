@@ -31,8 +31,8 @@ def delete_files_in_directory(data_path, filenames_to_delete):
 
 if __name__ == "__main__":
     
-    data_path = "/uolstore/home/student_lnxhome01/sc22olj/Compsci/year3/individual-project-COMP3931/individual-project-sc22olj/scratch disk/preprocessed-sample"
+    data_path = "/uolstore/home/student_lnxhome01/sc22olj/Compsci/year3/individual-project-COMP3931/individual-project-sc22olj/scratch-disk/full-datasets"
     
-    filenames_to_delete = ["aparc.DKTatlas+aseg.deep.nii", "aseg.auto_noCCseg.nii", "mask.nii", "orig.nii", "orig_nu.nii"]
+    filenames_to_delete = ["orig.mgz", "001.mgz"]
     
     delete_files_in_directory(data_path, filenames_to_delete)
