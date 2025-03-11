@@ -100,6 +100,9 @@ def train_nn(model_parameters, train_dataloader, test_dataloader):
         f1 = BinaryF1Score()
         precision = BinaryPrecision()
         recall = BinaryRecall()
+        roc_curve = (0.0, 0.0)
+        roc_auc_score = 0.0
+        
         
         with torch.no_grad():
             
@@ -132,15 +135,15 @@ def train_nn(model_parameters, train_dataloader, test_dataloader):
                 # Update metrics
                 [metric.update(pred_labels, labels) for metric in [conf_matrix, accuracy, f1, precision, recall]]
                 
-                print(labels.cpu())
-                
-                metrics["roc_curves"].append(roc_curve(labels.cpu(), pred_probability[:, 1].cpu(), pos_label=1, drop_intermediate=False))
-                
-                metrics["roc_aucs"].append(roc_auc_score(labels.cpu(), pred_probability[:, 1].cpu()))
+                roc_curve += roc_curve(labels.cpu(), pred_probability[:, 1].cpu(), pos_label=1, drop_intermediate=False)
 
         end_time = datetime.now()
                 
         # Append metric lists
+        metrics["roc_curves"].append(roc_curve(labels.cpu(), pred_probability[:, 1].cpu(), pos_label=1, drop_intermediate=False))
+        
+        metrics["roc_aucs"].append(roc_auc_score(labels.cpu(), pred_probability[:, 1].cpu()))
+        
         [metrics[key].append(metric.compute()) for key, metric in [("conf_matrices", conf_matrix), ("accuracies", accuracy), ("f1s", f1), ("precisions", precision), ("recalls", recall)]]       
             
         metrics['validation_losses'].append(running_loss/len(test_dataloader))

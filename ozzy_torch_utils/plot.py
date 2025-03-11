@@ -38,6 +38,8 @@ def plot(metrics: dict, model_parameters: object, save_params=False, save_metric
     ax2.plot(metrics['precisions'], label='Precision', color='red')
     ax2.plot(metrics['recalls'], label='Recall', color='orange')
     
+    print(len(metrics['roc_aucs']))
+    
     if True not in np.isnan(metrics['roc_aucs']):
         
         ax2.plot(metrics['roc_aucs'], label='ROC AUCs', color='purple')
