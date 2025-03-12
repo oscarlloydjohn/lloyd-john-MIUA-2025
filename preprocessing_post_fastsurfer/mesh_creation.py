@@ -10,7 +10,7 @@ import open3d as o3d
 from .vis import *
 
 # Convert a volume of voxels to a pointcloud mesh using walking cubes
-def volume_to_mesh(subject, fname_or_attribute):
+def volume_to_mesh(subject: object, fname_or_attribute, smooth: bool = False, number_of_iterations: int = 1, lambda_filter: float = 0.5) -> dict:
     
     if os.path.exists(os.path.join(subject.path, fname_or_attribute)):
         
@@ -22,6 +22,28 @@ def volume_to_mesh(subject, fname_or_attribute):
     
     verts, faces, normals, values = measure.marching_cubes(image_array)
     
+    if smooth:
+        
+        mesh = o3d.geometry.TriangleMesh()
+        
+        mesh.vertices = o3d.utility.Vector3dVector(verts)
+        
+        mesh.triangles = o3d.utility.Vector3iVector(faces)
+        
+        mesh.vertex_normals = o3d.utility.Vector3dVector(normals)
+        
+        mesh = mesh.filter_smooth_laplacian(number_of_iterations = number_of_iterations, lambda_filter = lambda_filter)
+        
+        mesh.compute_vertex_normals()
+        
+        verts = np.asarray(mesh.vertices)
+        
+        faces = np.asarray(mesh.triangles)
+        
+        normals = np.asarray(mesh.vertex_normals)
+        
+        values = None
+    
     fname = os.path.splitext(os.path.basename(fname_or_attribute))[0]
     
     pathname = os.path.join(subject.path, fname + '_mesh.npz')
@@ -30,7 +52,7 @@ def volume_to_mesh(subject, fname_or_attribute):
     
     return {"verts" : verts, "faces" : faces, "normals" : normals, "values" : values}
 
-def volume_to_mesh_parallel(subject_list, fname_or_attribute, downsample_factor=50, display=True):
+def volume_to_mesh_parallel(subject_list: list, fname_or_attribute, display: bool = False, smooth: bool = False, number_of_iterations: int = 1, lambda_filter: float = 0.5) -> None:
     
     with concurrent.futures.ProcessPoolExecutor() as executor:
         
@@ -38,7 +60,7 @@ def volume_to_mesh_parallel(subject_list, fname_or_attribute, downsample_factor=
         
         for subject in subject_list:
 
-            futures.append(executor.submit(volume_to_mesh, subject, fname_or_attribute))
+            futures.append(executor.submit(volume_to_mesh, subject, fname_or_attribute, smooth, number_of_iterations, lambda_filter))
             
         for future in concurrent.futures.as_completed(futures):
             
@@ -46,7 +68,7 @@ def volume_to_mesh_parallel(subject_list, fname_or_attribute, downsample_factor=
             
             if display:
                 
-                display_mesh(mesh, downsample_factor, mode='preview')
+                display_mesh(mesh, mode='preview')
     
     return
     
@@ -82,7 +104,7 @@ def downsample_cloud(subject, filename, n):
     
     return downsampled_cloud
 
-def downsample_cloud_parallel(subject_list, filename, num_samples, display=True):
+def downsample_cloud_parallel(subject_list, filename, num_samples, display=False):
     
     with concurrent.futures.ProcessPoolExecutor() as executor:
         

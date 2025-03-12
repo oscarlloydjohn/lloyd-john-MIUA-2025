@@ -55,7 +55,7 @@ def extract_region(subject, values_list, brain, aparc, is_aligned=False):
     
     return region_image
 
-def extract_region_parallel(subject_list, values_list, brain_attribute, aparc_attribute, is_aligned):
+def extract_region_parallel(subject_list, values_list, brain_attribute, aparc_attribute, is_aligned, display=False, display_3d=False):
     
     with concurrent.futures.ProcessPoolExecutor() as executor:
         
@@ -67,6 +67,12 @@ def extract_region_parallel(subject_list, values_list, brain_attribute, aparc_at
             
         for future in concurrent.futures.as_completed(futures):
             
-            display_image_3d(future.result(), 7, mode='preview')
+            if display_3d:
+                
+                display_image_3d(future.result(), 7, mode='preview')
+            
+            if display:
+                
+                display_image(future.result())
             
     return

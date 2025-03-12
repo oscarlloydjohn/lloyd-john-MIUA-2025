@@ -47,13 +47,16 @@ def display_image_3d(image, downsample_factor, mode='interactive'):
 
 def display_array_3d(array, downsample_factor, mode='interactive'):
     
+    # Preview mode is not implemented yet
     if mode == 'preview':
         
         '''plotter = pv.ImageData(window_size=[100, 100], notebook=False)'''
         
     elif mode == 'interactive':
         
-        grid = pv.ImageData()
+        pass
+    
+    grid = pv.ImageData()
         
     array = array[::downsample_factor, ::downsample_factor, ::downsample_factor]
     
@@ -83,15 +86,16 @@ def display_cloud(cloud, mode='interactive'):
         
         return
 
-    elif mode == 'preview':
+    # Preview mode is not implemented yet
+    if mode == 'preview':
         
-        '''plotter = pv.ImageData(window_size=[100, 100], notebook=False)
-        
-        plotter.enable_anti_aliasing(False)'''
+        '''plotter = pv.ImageData(window_size=[100, 100], notebook=False)'''
         
     elif mode == 'interactive':
         
-        plotter = pv.Plotter()
+        pass
+        
+    plotter = pv.Plotter()
     
     plotter.add_mesh(mesh, color='blue', point_size=5, render_points_as_spheres=True)
     
@@ -103,13 +107,16 @@ def display_cloud(cloud, mode='interactive'):
 
 def display_mesh(mesh_dict, mode='interactive'):
     
+    # Preview mode is not implemented yet
     if mode == 'preview':
         
-        plotter = pv.Plotter(window_size=[100, 100], notebook=False)
+        '''plotter = pv.ImageData(window_size=[100, 100], notebook=False)'''
         
     elif mode == 'interactive':
         
-        plotter = pv.Plotter()
+        pass
+        
+    plotter = pv.Plotter()
         
     faces = mesh_dict['faces']
     

@@ -92,9 +92,9 @@ def crop_subjects_parallel(subject_list, relative_path, max_bbox, is_full_brain=
             
             if display_3d:
                 
-                display_image_3d(future.result(), 7)
+                display_image_3d(future.result(), 7, mode='preview')
             
-            elif display:
+            if display:
                 
                 display_image(future.result())
             

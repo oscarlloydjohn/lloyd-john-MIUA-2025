@@ -63,7 +63,7 @@ def alignment(subject, reference_brain):
     return aligned_image
 
 # Affine align a list of subjects in parallel 
-def alignment_parallel(subject_list, reference_brain):
+def alignment_parallel(subject_list, reference_brain, display=False, display_3d=False):
         
     # Use ProcessPoolExecutor to run affine alignment in parallel
     with concurrent.futures.ProcessPoolExecutor() as executor:
@@ -76,8 +76,14 @@ def alignment_parallel(subject_list, reference_brain):
         
         for future in concurrent.futures.as_completed(futures):
             
-            display_image(future.result())
+            if display_3d:
+                
+                display_image_3d(future.result(), 7, mode='preview')
             
+            if display:
+                
+                display_image(future.result())
+                
     return
 
 
@@ -124,7 +130,7 @@ def aux_alignment(subject, file, is_aparc=False):
     return transformed_image
 
 # Align aparc files in parallel
-def aux_alignment_parallel(subject_list, moving_image_attribute, is_aparc=False):
+def aux_alignment_parallel(subject_list, moving_image_attribute, is_aparc=False, display=False):
     
     # Use ProcessPoolExecutor to run affine alignment in parallel
     with concurrent.futures.ProcessPoolExecutor() as executor:
@@ -137,6 +143,8 @@ def aux_alignment_parallel(subject_list, moving_image_attribute, is_aparc=False)
             
         for future in concurrent.futures.as_completed(futures):
             
-            display_image(future.result())
+            if display:
+            
+                display_image(future.result())
             
     return
