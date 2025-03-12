@@ -8,9 +8,10 @@ import open3d as o3d
 
 # Custom modules
 from .vis import *
+from .subject import *
 
 # Convert a volume of voxels to a pointcloud mesh using walking cubes
-def volume_to_mesh(subject: object, fname_or_attribute, smooth: bool = False, number_of_iterations: int = 1, lambda_filter: float = 0.5) -> dict:
+def volume_to_mesh(subject: object, fname_or_attribute, smooth: bool = False, number_of_iterations: int = 1, lambda_filter: float = 0.5, **kwargs) -> dict:
     
     if os.path.exists(os.path.join(subject.path, fname_or_attribute)):
         
@@ -20,7 +21,7 @@ def volume_to_mesh(subject: object, fname_or_attribute, smooth: bool = False, nu
         
         image_array = nibabel.load(getattr(subject, fname_or_attribute)).get_fdata()
     
-    verts, faces, normals, values = measure.marching_cubes(image_array)
+    verts, faces, normals, values = measure.marching_cubes(image_array, **kwargs)
     
     if smooth:
         
@@ -52,7 +53,7 @@ def volume_to_mesh(subject: object, fname_or_attribute, smooth: bool = False, nu
     
     return {"verts" : verts, "faces" : faces, "normals" : normals, "values" : values}
 
-def volume_to_mesh_parallel(subject_list: list, fname_or_attribute, display: bool = False, smooth: bool = False, number_of_iterations: int = 1, lambda_filter: float = 0.5) -> None:
+def volume_to_mesh_parallel(subject_list: list, fname_or_attribute, display: bool = False, smooth: bool = False, number_of_iterations: int = 1, lambda_filter: float = 0.5, **kwargs) -> None:
     
     with concurrent.futures.ProcessPoolExecutor() as executor:
         
@@ -60,7 +61,7 @@ def volume_to_mesh_parallel(subject_list: list, fname_or_attribute, display: boo
         
         for subject in subject_list:
 
-            futures.append(executor.submit(volume_to_mesh, subject, fname_or_attribute, smooth, number_of_iterations, lambda_filter))
+            futures.append(executor.submit(volume_to_mesh, subject, fname_or_attribute, smooth, number_of_iterations, lambda_filter, **kwargs))
             
         for future in concurrent.futures.as_completed(futures):
             
@@ -73,7 +74,7 @@ def volume_to_mesh_parallel(subject_list: list, fname_or_attribute, display: boo
     return
     
 # Get the minimum number of vertices over all meshes in the list
-def get_min_cloud_points(subject_list, filename):
+def get_min_cloud_points(subject_list: list, filename: str) -> int:
     
     min_samples = np.inf
     
@@ -86,7 +87,7 @@ def get_min_cloud_points(subject_list, filename):
 # https://medium.com/towards-data-science/how-to-use-pointnet-for-3d-computer-vision-in-an-industrial-context-3568ba37327e
 # Farthest point sampling is suggested
 # NB used open3d as it natively supports this type of sampling
-def downsample_cloud(subject, filename, n):
+def downsample_cloud(subject: Subject, filename, n):
     
     mesh_dict = np.load(os.path.join(subject.path, filename))
     
