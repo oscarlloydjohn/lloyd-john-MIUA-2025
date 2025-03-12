@@ -58,6 +58,7 @@ def plot(metrics: dict, model_parameters: object, save_params=False, save_metric
     ax3.set_title('ROC Curve from final epoch')
     ax3.set_xlabel('False Positive Rate')
     ax3.set_ylabel('True Positive Rate')
+    ax1.set_xlim(0,1)
     ax3.legend()
     ax3.grid(True)
 
@@ -113,7 +114,7 @@ def plot(metrics: dict, model_parameters: object, save_params=False, save_metric
     info.append("Parameters:")
     info.append("\n")
     info.append(f"Model name: {model_parameters.model.__class__.__module__}.{model_parameters.model.__class__.__name__}")
-    info.append(f"Model optimiser: {model_parameters.optimiser.__class__.__module__}.{model_parameters.optimiser.__class__.__name__}")
+    info.append(f"Model optimiser: {model_parameters.optimiser}")
     info.append(f"Model criterion: {model_parameters.criterion.__class__.__module__}.{model_parameters.criterion.__class__.__name__}")
 
     for name, value in model_parameters.__dict__.items():
@@ -129,30 +130,37 @@ def plot(metrics: dict, model_parameters: object, save_params=False, save_metric
     # Add text to fig
     fig.text(0.5, 0.02, info_text, ha='center', va='top', wrap=True, fontsize=10)
 
-    # Calculate time for filename
-    current_time = datetime.now().strftime("%d-%m-%Y_%H-%M-%S")
     
-    name = f"plot_{current_time}"
+    if save_params or save_metrics or save_png:
+        
+        # Calculate time for filename
+        current_time = datetime.now().strftime("%d-%m-%Y_%H-%M-%S")
+        
+        name = f"run_{current_time}"
+            
+        directory = f'/uolstore/home/student_lnxhome01/sc22olj/Compsci/year3/individual-project-COMP3931/individual-project-sc22olj/runs/{name}'
+        
+        os.makedirs(directory, exist_ok=True)
     
     # Save params not tested yet
     if save_params:
         
         # Save params as pickle
-        with open(f'/uolstore/home/student_lnxhome01/sc22olj/Compsci/year3/individual-project-COMP3931/individual-project-sc22olj/figs/{name}_params.pkl', 'wb') as file:
+        with open(f'{directory}/{name}_params.pkl', 'wb') as file:
             
             pickle.dump(model_parameters, file)  
 
     if save_metrics:
         
         # Save metrics as pickle
-        with open(f'/uolstore/home/student_lnxhome01/sc22olj/Compsci/year3/individual-project-COMP3931/individual-project-sc22olj/figs/{name}_metrics.pkl', 'wb') as file:
+        with open(f'{directory}/{name}_metrics.pkl', 'wb') as file:
             
             pickle.dump(metrics, file)
         
     if save_png:
         
         # Save png as pickle
-        plt.savefig(f'/uolstore/home/student_lnxhome01/sc22olj/Compsci/year3/individual-project-COMP3931/individual-project-sc22olj/figs/{name}.png', bbox_inches='tight')
+        plt.savefig(f'{directory}/{name}.png', bbox_inches='tight')
     
     plt.show()
     

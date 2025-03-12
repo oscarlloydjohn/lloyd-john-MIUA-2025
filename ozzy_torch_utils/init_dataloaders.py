@@ -47,7 +47,7 @@ def init_dataloaders(model_parameters, verify_data=False):
 
         print(f"Id intersection between train and test: {np.intersect1d(np.unique(train_ids), np.unique(test_ids))}\n")
         
-    # Check that no test batch contains only one class as this messes up metrics NB is this a good idea?
+    '''# Check that no test batch contains only one class as this messes up metrics NB is this a good idea?
     for batch_idx, dict in enumerate(test_dataloader):
         
         if len(np.unique(dict[model_parameters.labels_string])) == 1:
@@ -56,6 +56,6 @@ def init_dataloaders(model_parameters, verify_data=False):
                   
             train_dataloader, test_dataloader = init_dataloaders(model_parameters, False)
             
-            break
+            break'''
         
     return train_dataloader, test_dataloader
