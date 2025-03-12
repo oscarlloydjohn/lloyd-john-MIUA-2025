@@ -15,7 +15,7 @@ import cnn3d_xmuyzz.ResNetV2
 from preprocessing_post_fastsurfer.subject import *
 from preprocessing_post_fastsurfer.vis import *
 from ozzy_torch_utils.split_dataset import *
-from ozzy_torch_utils.SubjectDataset import *
+from ozzy_torch_utils.subject_dataset import *
 from ozzy_torch_utils.plot import *
 from ozzy_torch_utils.train_nn import *
 from ozzy_torch_utils.model_parameters import *

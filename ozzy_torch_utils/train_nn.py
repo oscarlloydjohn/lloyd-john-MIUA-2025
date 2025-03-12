@@ -11,10 +11,11 @@ from sklearn.metrics import roc_curve, roc_auc_score
 # Custom modules
 from preprocessing_post_fastsurfer.subject import *
 from preprocessing_post_fastsurfer.vis import *
-from ozzy_torch_utils.split_dataset import *
-from ozzy_torch_utils.SubjectDataset import *
+from .split_dataset import *
+from .subject_dataset import *
+from .model_parameters import *
 
-def train_nn(model_parameters, train_dataloader, test_dataloader, mode='pointnet', unsqueeze=False):
+def train_nn(model_parameters: ModelParameters, train_dataloader: Dataset, test_dataloader: Dataset, mode: str = 'pointnet', unsqueeze: bool = False) -> dict:
     
     for attr, value in vars(model_parameters).items():
         

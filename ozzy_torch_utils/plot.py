@@ -7,13 +7,13 @@ import pickle
 # Custom modules
 from preprocessing_post_fastsurfer.subject import *
 from preprocessing_post_fastsurfer.vis import *
-from ozzy_torch_utils.split_dataset import *
-from ozzy_torch_utils.SubjectDataset import *
+from .split_dataset import *
+from .subject_dataset import *
 
 
 # NB this function has to remain in the notebook for it to work properly
 # Plot training loss, validation loss, and accuracy on separate subplots, along with displaying hyperparameters
-def plot(metrics: dict, model_parameters: object, save_params=False, save_metrics=False, save_png=False, ylim=None) -> None:
+def plot(metrics: dict, model_parameters: object, save_params: bool = False, save_metrics: bool = False, save_png: bool = False, ylim: tuple = None) -> None:
 
     fig, (ax1, ax2, ax3) = plt.subplots(3, 1, figsize=(10, 15), sharex=False)
 

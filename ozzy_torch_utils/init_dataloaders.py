@@ -3,7 +3,7 @@ from torch.utils.data import DataLoader
 
 # Custom modules
 from .split_dataset import *
-from .SubjectDataset import *
+from .subject_dataset import *
 
 def init_dataloaders(model_parameters, verify_data=False):
     
@@ -46,16 +46,5 @@ def init_dataloaders(model_parameters, verify_data=False):
         test_ids = [dataset.subject_list[index].subject_metadata['Subject'].iloc[0] for index in test_data.indices]
 
         print(f"Id intersection between train and test: {np.intersect1d(np.unique(train_ids), np.unique(test_ids))}\n")
-        
-    '''# Check that no test batch contains only one class as this messes up metrics NB is this a good idea?
-    for batch_idx, dict in enumerate(test_dataloader):
-        
-        if len(np.unique(dict[model_parameters.labels_string])) == 1:
-            
-            print(f"Labels tensor of batch index {batch_idx} had only one class, retrying\n")     
-                  
-            train_dataloader, test_dataloader = init_dataloaders(model_parameters, False)
-            
-            break'''
         
     return train_dataloader, test_dataloader
