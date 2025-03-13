@@ -111,20 +111,25 @@ model_parameters.run_prediction =
 # Example prediction func for resnet/cnn
 '''def run_prediction(inputs, labels):
     
+    def run_prediction(inputs, labels):
+    
     # Unsqueeze to fit network input (it expects a channel)
     inputs = inputs.unsqueeze(1)
     
-    logit_output, *_ = model_parameters.model(inputs)
+    logit_output = model_parameters.model(inputs)
     
-    loss = model_parameters.criterion(logit_output, labels)
+    # Assuming BCELoss with logits
+    loss = model_parameters.criterion(logit_output[:, 1], labels.to(torch.float))
     
-    # Output of last layer is softmax ???
-    pred_probability = logit_output
+    # Output of last layer is not softmax, so normalise
+    pred_probability = F.softmax(logit_output, dim=1)
         
     # Take largest value rather than threshold
     pred_labels = torch.argmax(pred_probability, dim=-1)
     
-    return loss, pred_probability, pred_labels'''
+    return loss, pred_probability, pred_labels
+
+    model_parameters.run_prediction = run_prediction'''
 
 
 '''
@@ -135,7 +140,7 @@ train_dataloader, test_dataloader = init_dataloaders(model_parameters, verify_da
 '''
 Train
 '''
-metrics = train_nn(model_parameters, train_dataloader, test_dataloader, mode=, unsqueeze=)
+metrics = train_nn(model_parameters, train_dataloader, test_dataloader)
 
 '''
 Plot

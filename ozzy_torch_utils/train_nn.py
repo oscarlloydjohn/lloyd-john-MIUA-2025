@@ -15,7 +15,7 @@ from .split_dataset import *
 from .subject_dataset import *
 from .model_parameters import *
 
-def train_nn(model_parameters: ModelParameters, train_dataloader: Dataset, test_dataloader: Dataset, mode: str = 'pointnet', unsqueeze: bool = False) -> dict:
+def train_nn(model_parameters: ModelParameters, train_dataloader: Dataset, test_dataloader: Dataset) -> dict:
     
     for attr, value in vars(model_parameters).items():
         
