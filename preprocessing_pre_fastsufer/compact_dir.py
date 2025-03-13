@@ -1,5 +1,6 @@
 import os
 import shutil
+import argparse
 
 # Recursively search all subdirectories for files and put them in data_path. Delete empty directories
 def compact_dir(data_path):
@@ -24,3 +25,13 @@ def compact_dir(data_path):
                 os.rmdir(dir_path)
     
     print(f"Compaction of directory {data_path} complete.")
+    
+if __name__ == "__main__":
+
+    parser = argparse.ArgumentParser(description="Flattens the given directory")
+    
+    parser.add_argument('--data_path', type=str, required=True)
+    
+    args = parser.parse_args()
+    
+    compact_dir(args.data_path)

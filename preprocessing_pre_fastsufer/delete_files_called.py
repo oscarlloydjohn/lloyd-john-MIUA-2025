@@ -1,6 +1,9 @@
 import os
 import concurrent.futures
+from concurrent.futures import ThreadPoolExecutor
+import argparse
 
+# Delete a file
 def delete_file(file_path):
     
     try:
@@ -28,7 +31,8 @@ def delete_files_in_directory(data_path, filenames_to_delete):
     with concurrent.futures.ThreadPoolExecutor() as executor:
         
         executor.map(delete_file, files_to_delete)
-        
+
+# Remove files containing a specified string
 def remove_files_containing(data_path, string):
     
     files = [f for f in os.listdir(data_path) if os.path.isfile(os.path.join(data_path, f))]
@@ -55,10 +59,11 @@ def remove_files_containing(data_path, string):
 
 if __name__ == "__main__":
     
-    data_path = "/uolstore/home/student_lnxhome01/sc22olj/Compsci/year3/individual-project-COMP3931/individual-project-sc22olj/scratch-disk/full-datasets"
+    parser = argparse.ArgumentParser(description="Delete all files matching the filename in the given directory (recursive)")
     
-    filenames_to_delete = ["orig.mgz", "001.mgz"]
+    parser.add_argument('--data_path', type=str, required=True)
+    parser.add_argument('--filename', type=str, required=True)
     
-    delete_files_in_directory(data_path, filenames_to_delete)
+    args = parser.parse_args()
     
-    
+    delete_files_in_directory(args.data_path, [args.filename])

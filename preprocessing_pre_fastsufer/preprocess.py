@@ -3,7 +3,6 @@ import subprocess
 import shutil
 from concurrent.futures import ThreadPoolExecutor
 import argparse
-import sys
 
 
 # Use freesurfer mri_convert in parallel
@@ -20,12 +19,15 @@ def batch_mgz_to_nii(data_path, batchname):
     
     # Convert individual file
     def convert_mgz_to_nii(filename):
+        
         file_path = os.path.join(target, filename)
 
         output_filename = os.path.splitext(filename)[0] + ".nii"
+        
         output_file_path = os.path.join(target, output_filename)
 
         process = subprocess.Popen(["mri_convert", file_path, output_file_path])
+        
         process.wait() 
 
         print(f"Converted {filename} to {output_filename}")
@@ -33,7 +35,7 @@ def batch_mgz_to_nii(data_path, batchname):
     with ThreadPoolExecutor() as executor:
         
         executor.map(convert_mgz_to_nii, mgz_files)
-    required=''
+        
     print("All .mgz files have been converted.")
     
     return
@@ -68,8 +70,7 @@ def process_file(data_path, filename, license_path, threads, tesla3=False):
         "--sid", dirname,
         f"--t1", f"{data_path}/{filename}",
         "--3T", "--seg_only", "--threads", f"{threads}"
-        ]   
-
+    ]   
 
     process = subprocess.Popen(command)
     
@@ -130,7 +131,7 @@ def batch_run(data_path, nii_list, args):
 
         try:
             
-            process_file(data_path, file, args.license_path, 12)
+            process_file(data_path, file, args.license_path, args.threads, args.tesla3)
             
             if args.keep_orig:
             
@@ -157,18 +158,18 @@ def batch_run(data_path, nii_list, args):
 
     print("Batch processing complete. Files have been logged to completed.log.")
 
-parser = argparse.ArgumentParser(description="Script for batch processing nii files using fastsurfer")
+if __name__ == "__main__":
 
-parser.add_argument('--keep_orig', action='store_true')
-parser.add_argument('--mgz_to_nii', action='store_true')
-parser.add_argument('--3tesla', action='store_true')
-parser.add_argument('--remove_files_containing', type=str, required=False)
+    parser = argparse.ArgumentParser(description="Script for batch processing nii files using fastsurfer")
 
-# Extra processing args are required if process is passed
-parser.add_argument('--data_path', type=str, required=True)
-parser.add_argument('--license_path', type=str, required=True)
-parser.add_argument('--container_path', type=str, required=True)
+    parser.add_argument('--keep_orig', action='store_true')
+    parser.add_argument('--mgz_to_nii', action='store_true')
+    parser.add_argument('--tesla3', action='store_true')
+    parser.add_argument('--threads', type=int, required=True)
+    parser.add_argument('--data_path', type=str, required=True)
+    parser.add_argument('--license_path', type=str, required=True)
+    parser.add_argument('--container_path', type=str, required=True)
 
-args = parser.parse_args()
+    args = parser.parse_args()
 
-batch_run(args.data_path, list_nii(args.data_path), args)
+    batch_run(args.data_path, list_nii(args.data_path), args)
