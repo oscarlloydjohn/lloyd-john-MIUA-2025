@@ -14,7 +14,6 @@ class ModelParameters:
     test_size: float
     num_epochs: int
     learning_rate: float
-    threshold: float
     model: object
     criterion: object
     optimiser: object
@@ -32,7 +31,6 @@ class ModelParameters:
         self.test_size = None
         self.num_epochs = None
         self.learning_rate = None
-        self.threshold = None
         self.model = None
         self.criterion = None
         self.optimiser = None

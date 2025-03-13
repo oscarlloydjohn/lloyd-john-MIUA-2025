@@ -104,7 +104,7 @@ model_parameters.run_prediction =
     pred_probability = torch.exp(logit_output)
         
     # Threshold is variable to give preference to FN or FP
-    pred_labels = (pred_probability[:, 1] >= model_parameters.threshold).int()
+    pred_labels = (pred_probability[:, 1] >= 0.5).int()
     
     return loss, pred_probability, pred_labels'''
     
