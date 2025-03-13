@@ -37,4 +37,4 @@ if __name__ == "__main__":
     
     args = parser.parse_args()
     
-    delete_files_in_directory(args.data_path, [args.string])
+    delete_files_containing(args.data_path, [args.string])
