@@ -78,7 +78,8 @@ def train_nn(model_parameters: ModelParameters, train_dataloader: Dataset, test_
             points, labels = points.to(device), labels.to(device)
 
             # Forward pass
-            logit_output = model_parameters.model(points)[0]
+            ## Issue with shape here, 
+            logit_output, *_ = model_parameters.model(points)
 
             # Calculate loss, trans_feat argument as None as not used in this function
             if mode == 'pointnet':
