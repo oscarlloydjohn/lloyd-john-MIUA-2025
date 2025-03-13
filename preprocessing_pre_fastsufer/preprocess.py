@@ -5,31 +5,6 @@ from concurrent.futures import ThreadPoolExecutor
 import argparse
 import sys
 
-# Deletes all files that contain a string in their name
-def remove_files_containing(data_path, string):
-    
-    files = [f for f in os.listdir(data_path) if os.path.isfile(os.path.join(data_path, f))]
-    
-    files_to_remove = [f for f in files if string in f]
-    
-    def delete_file(file_name):
-        
-        try:
-            
-            file_path = os.path.join(data_path, file_name)
-            
-            os.remove(file_path)
-            
-            print(f"Deleted: {file_name}")
-            
-        except Exception as e:
-            
-            print(f"Error deleting {file_name}: {e}")
-
-    with ThreadPoolExecutor() as executor:
-        
-        executor.map(delete_file, files_to_remove)
-
 
 # Use freesurfer mri_convert in parallel
 def batch_mgz_to_nii(data_path, batchname):
@@ -63,30 +38,6 @@ def batch_mgz_to_nii(data_path, batchname):
     
     return
 
-# Recursively search all subdirectories for files and put them in data_path. Delete empty directories
-def compact_dir(data_path):
-    
-    # Walk through the directory and its subdirectories
-    for root, dirs, files in os.walk(data_path, topdown=False):
-        
-        for filename in files:
-            
-            file_path = os.path.join(root, filename)
-            
-            # Move the file to the top-level directory
-            shutil.move(file_path, os.path.join(data_path, filename))
-        
-        # After moving files, check and remove empty directories
-        for dirname in dirs:
-            
-            dir_path = os.path.join(root, dirname)
-            
-            if not os.listdir(dir_path):  # Directory is empty
-                
-                os.rmdir(dir_path)
-    
-    print(f"Compaction of directory {data_path} complete.")
-
 # Gets a list of nii files in data_path. Non recursive
 def list_nii(data_path):
     
@@ -95,7 +46,7 @@ def list_nii(data_path):
     return nii_files
 
 # Runs fastsurfer seg only on a given nii file, putting output in a directory of the same name
-def process_file(data_path, filename, license_path, container_path, threads):
+def process_file(data_path, filename, license_path, threads, tesla3=False):
     
     dirname = os.path.splitext(os.path.basename(filename))[0]
 
@@ -105,8 +56,20 @@ def process_file(data_path, filename, license_path, container_path, threads):
         f"--sd", data_path,
         "--sid", dirname,
         f"--t1", f"{data_path}/{filename}",
-        "--3T", "--seg_only", "--threads", f"{threads}"
+        "--seg_only", "--threads", f"{threads}"
     ]
+    
+    if tesla3:
+        
+        command = [
+        "/fastsurfer/run_fastsurfer.sh",
+        "--fs_license", f"{license_path}",
+        f"--sd", data_path,
+        "--sid", dirname,
+        f"--t1", f"{data_path}/{filename}",
+        "--3T", "--seg_only", "--threads", f"{threads}"
+        ]   
+
 
     process = subprocess.Popen(command)
     
@@ -141,7 +104,7 @@ def move_nii(data_path, filename):
         
     return
 
-def batch_run(data_path, nii_list, container_path, license_path, nii_to_mgz, keep_orig):
+def batch_run(data_path, nii_list, args):
     
     # Read the completed.txt file to get a list of already processed files
     completed_files = set()
@@ -167,9 +130,9 @@ def batch_run(data_path, nii_list, container_path, license_path, nii_to_mgz, kee
 
         try:
             
-            process_file(data_path, file, license_path, container_path, 12)
+            process_file(data_path, file, args.license_path, 12)
             
-            if keep_orig:
+            if args.keep_orig:
             
                 move_nii(data_path, file)
                 
@@ -177,7 +140,7 @@ def batch_run(data_path, nii_list, container_path, license_path, nii_to_mgz, kee
                 
                 os.remove(os.path.join(data_path, file))
             
-            if nii_to_mgz:
+            if args.nii_to_mgz:
                 
                 batch_mgz_to_nii(data_path, file)
 
@@ -187,34 +150,25 @@ def batch_run(data_path, nii_list, container_path, license_path, nii_to_mgz, kee
                 completed_file.write(f"{file}\n")
 
         except Exception as e:
+            
             print(f"Error processing {file}: {e}")
+            
             continue
 
     print("Batch processing complete. Files have been logged to completed.log.")
 
 parser = argparse.ArgumentParser(description="Script for batch processing nii files using fastsurfer")
 
-parser.add_argument('--compact_dir', action='store_true')
 parser.add_argument('--keep_orig', action='store_true')
 parser.add_argument('--mgz_to_nii', action='store_true')
+parser.add_argument('--3tesla', action='store_true')
 parser.add_argument('--remove_files_containing', type=str, required=False)
 
 # Extra processing args are required if process is passed
-parser.add_argument('--process', action='store_true')
-parser.add_argument('--data_path', type=str, required='--process' in sys.argv)
-parser.add_argument('--license_path', type=str, required='--process' in sys.argv)
-parser.add_argument('--container_path', type=str, required='--process' in sys.argv)
+parser.add_argument('--data_path', type=str, required=True)
+parser.add_argument('--license_path', type=str, required=True)
+parser.add_argument('--container_path', type=str, required=True)
 
 args = parser.parse_args()
 
-if args.compact_dir:
-    
-    compact_dir(args.data_path)
-
-if args.remove_files_containing:
-    
-    remove_files_containing(args.data_path, args.remove_files_containing)
-
-if args.process:
-    
-    batch_run(args.data_path, list_nii(args.data_path), args.container_path, args.license_path, args.mgz_to_nii, args.keep_orig)
+batch_run(args.data_path, list_nii(args.data_path), args)
