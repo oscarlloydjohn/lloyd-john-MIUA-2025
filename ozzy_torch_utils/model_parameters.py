@@ -1,4 +1,5 @@
 import os
+from typing import Callable
 
 class ModelParameters:
     
@@ -17,6 +18,7 @@ class ModelParameters:
     model: object
     criterion: object
     optimiser: object
+    run_prediction: Callable
     
     def __init__(self):
         self.data_path = None
@@ -34,3 +36,4 @@ class ModelParameters:
         self.model = None
         self.criterion = None
         self.optimiser = None
+        self.run_prediction = None

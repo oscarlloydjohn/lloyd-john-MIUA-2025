@@ -88,6 +88,45 @@ model_parameters.optimiser = optim.Adam(
                                 amsgrad=True
                             )
 
+model_parameters.run_prediction = 
+
+# Example prediction func for pointnet
+'''def run_prediction(inputs, labels):
+    
+    # Transpose as in benny script (NB why does it need a transpose)
+    inputs = inputs.transpose(2, 1)
+    
+    logit_output, *_ = model_parameters.model(inputs)
+    
+    loss = model_parameters.criterion(logit_output, labels, None)
+    
+    # Apply exponent as the output of the model is log softmax
+    pred_probability = torch.exp(logit_output)
+        
+    # Threshold is variable to give preference to FN or FP
+    pred_labels = (pred_probability[:, 1] >= model_parameters.threshold).int()
+    
+    return loss, pred_probability, pred_labels'''
+    
+# Example prediction func for resnet/cnn
+'''def run_prediction(inputs, labels):
+    
+    # Unsqueeze to fit network input (it expects a channel)
+    inputs = inputs.unsqueeze(1)
+    
+    logit_output, *_ = model_parameters.model(inputs)
+    
+    loss = model_parameters.criterion(logit_output, labels)
+    
+    # Output of last layer is softmax ???
+    pred_probability = logit_output
+        
+    # Take largest value rather than threshold
+    pred_labels = torch.argmax(pred_probability, dim=-1)
+    
+    return loss, pred_probability, pred_labels'''
+
+
 '''
 Dataloaders
 '''

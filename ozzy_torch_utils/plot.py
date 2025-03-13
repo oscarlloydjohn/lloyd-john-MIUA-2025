@@ -58,7 +58,7 @@ def plot(metrics: dict, model_parameters: object, save_params: bool = False, sav
     ax3.set_title('ROC Curve from final epoch')
     ax3.set_xlabel('False Positive Rate')
     ax3.set_ylabel('True Positive Rate')
-    ax1.set_xlim(0,1)
+    ax3.set_xlim(0,1)
     ax3.legend()
     ax3.grid(True)
 

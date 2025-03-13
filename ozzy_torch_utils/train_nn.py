@@ -55,40 +55,19 @@ def train_nn(model_parameters: ModelParameters, train_dataloader: Dataset, test_
         # Training loop
         model_parameters.model.train()
         
-        running_loss = 0.0
-
+        running_training_loss = 0.0
+        
+        print(f"\nTraining:")
         for batch_idx, dict in tqdm(enumerate(train_dataloader), total=len(train_dataloader)):
             
             # Access dict returned by dataset __getitem__
-            points = dict[model_parameters.data_string]
+            inputs = dict[model_parameters.data_string]
             labels = dict[model_parameters.labels_string]
             
-            # Transpose as in benny script (NB why does it need a transpose)
-            if mode == 'pointnet':
-                             
-                points = points.transpose(2, 1)
+            inputs, labels = inputs.to(device), labels.to(device)
             
-            # Unsqueeze for resnet
-            if unsqueeze:
-                
-                points = points.unsqueeze(1)
-                
-                
-            
-            points, labels = points.to(device), labels.to(device)
-
-            # Forward pass
-            ## Issue with shape here, 
-            logit_output, *_ = model_parameters.model(points)
-
-            # Calculate loss, trans_feat argument as None as not used in this function
-            if mode == 'pointnet':
-                             
-                loss = model_parameters.criterion(logit_output, labels, None)
-                
-            else:
-                
-                loss = model_parameters.criterion(logit_output, labels)
+            # Function as defined for given model
+            loss, pred_probability, pred_labels = model_parameters.run_prediction(inputs, labels)
 
             # Backpropagation
             loss.backward()
@@ -96,22 +75,18 @@ def train_nn(model_parameters: ModelParameters, train_dataloader: Dataset, test_
             model_parameters.optimiser.zero_grad()
             
             # Multiply loss by batch size to account for differences in batch size (e.g last batch)
-            running_loss += loss.item() * points.size(0)
-            
-        metrics['training_losses'].append(running_loss/len(train_dataloader))
-        
-        end_time = datetime.now()
+            running_training_loss += loss.item() * inputs.size(0)
         
         # Validation loop
         model_parameters.model.eval()
         
         # Tensors to store concatenated results from each batch, to compute epoch metrics
-        epoch_pred_probs = torch.empty((0, 2))
-        epoch_pred_labels = torch.empty(0, dtype=torch.int32)
-        epoch_labels = torch.empty(0,dtype=torch.int32)
+        epoch_pred_probs = torch.empty((0, 2), device=device)
+        epoch_pred_labels = torch.empty(0, dtype=torch.int32, device=device)
+        epoch_labels = torch.empty(0,dtype=torch.int32, device=device)
         
         # Initialise metrics
-        running_loss = 0.0
+        running_validation_loss = 0.0
         conf_matrix = BinaryConfusionMatrix()
         accuracy = BinaryAccuracy()
         f1 = BinaryF1Score()
@@ -120,57 +95,42 @@ def train_nn(model_parameters: ModelParameters, train_dataloader: Dataset, test_
         
         with torch.no_grad():
             
-            for batch_idx, dict in enumerate(test_dataloader):
+            print(f"\nTesting:")
+            for batch_idx, dict in tqdm(enumerate(test_dataloader), total=len(test_dataloader)):
                 
-                points = dict[model_parameters.data_string]
+                inputs = dict[model_parameters.data_string]
                 labels = dict[model_parameters.labels_string]
                 
-                # Transpose as in benny script (NB why does it need a transpose)
-                if mode == 'pointnet':
-                                
-                    points = points.transpose(2, 1)
+                inputs, labels = inputs.to(device), labels.to(device)
                 
-                # Unsqueeze for resnet
-                if unsqueeze:
+                loss, pred_probability, pred_labels = model_parameters.run_prediction(inputs, labels)
                     
-                    points = points.unsqueeze(1)
-                
-                points, labels = points.to(device), labels.to(device)
-                
-                pred_probability = model_parameters.model(points)[0]
-                
-                # NB could use lambda function for label conversion
-                if mode == 'pointnet':
-                
-                    running_loss += model_parameters.criterion(pred_probability, labels, None).item() * points.size(0)
-                
-                    # Apply exponent as the output of the model is log softmax
-                    pred_probability = torch.exp(pred_probability)
-                    
-                    # Threshold is variable to give preference to FN or FP
-                    pred_labels = (pred_probability[:, 1] >= model_parameters.threshold).int()
-                    
-                else:
-
-                    pred_labels = torch.argmax(pred_probability, dim=-1)
+                running_validation_loss += loss.item() * inputs.size(0)
                     
                 # Accumulate results for metrics 
-                epoch_pred_probs = torch.cat((epoch_pred_probs, pred_probability.cpu()))
-                epoch_pred_labels = torch.cat((epoch_pred_labels, pred_labels.cpu()))
-                epoch_labels = torch.cat((epoch_labels, labels.cpu()))
+                epoch_pred_probs = torch.cat((epoch_pred_probs, pred_probability))
+                epoch_pred_labels = torch.cat((epoch_pred_labels, pred_labels))
+                epoch_labels = torch.cat((epoch_labels, labels))
 
         end_time = datetime.now()
         
         # Update and compute metrics for each epoch
-        [metric.update(epoch_pred_labels, epoch_labels) for metric in [conf_matrix, accuracy, f1, precision, recall]]
-        
-        [metrics[key].append(metric.compute()) for key, metric in [("conf_matrices", conf_matrix), ("accuracies", accuracy), ("f1s", f1), ("precisions", precision), ("recalls", recall)]]
-    
-        metrics['roc_curves'].append(roc_curve(epoch_labels, epoch_pred_probs[:, 1], pos_label=1, drop_intermediate=False))
-        
-        metrics['roc_aucs'].append(roc_auc_score(epoch_labels, epoch_pred_probs[:, 1]))
+         
+        for metric in [conf_matrix, accuracy, f1, precision, recall]:
             
-        metrics['validation_losses'].append(running_loss/len(test_dataloader))
+            metric.update(epoch_pred_labels, epoch_labels) 
+         
+        for key, metric in [("conf_matrices", conf_matrix), ("accuracies", accuracy), ("f1s", f1), ("precisions", precision), ("recalls", recall)]:
+            
+            metrics[key].append(metric.compute()) 
+    
+        metrics['roc_curves'].append(roc_curve(epoch_labels.cpu(), epoch_pred_probs[:, 1].cpu(), pos_label=1, drop_intermediate=False))
+        
+        metrics['roc_aucs'].append(roc_auc_score(epoch_labels.cpu(), epoch_pred_probs[:, 1].cpu()))
+        
+        metrics['training_losses'].append(running_training_loss/len(train_dataloader))
+            
+        metrics['validation_losses'].append(running_validation_loss/len(test_dataloader))
         
         # Reset torcheval metrics for next epoch
         [metric.reset() for metric in [conf_matrix, accuracy, f1, precision, recall]]
