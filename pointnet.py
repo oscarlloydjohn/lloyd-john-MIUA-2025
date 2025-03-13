@@ -56,8 +56,6 @@ model_parameters.num_epochs = 200
 
 model_parameters.learning_rate = 0.001
 
-model_parameters.threshold = 0.5
-
 model_parameters.model = pointnet2_cls_msg.get_model(len(model_parameters.selected_labels), normal_channel=False)
 
 model_parameters.criterion = pointnet2_cls_msg.get_loss()

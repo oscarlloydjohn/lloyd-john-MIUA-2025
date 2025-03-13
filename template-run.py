@@ -55,8 +55,6 @@ model_parameters.num_epochs = 200
 
 model_parameters.learning_rate = 0.001
 
-model_parameters.threshold = 0.5
-
 model_parameters.model = 
 
 # Examples
