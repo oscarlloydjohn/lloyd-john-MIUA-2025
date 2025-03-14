@@ -141,7 +141,7 @@ def batch_run(data_path, nii_list, args):
                 
                 os.remove(os.path.join(data_path, file))
             
-            if args.nii_to_mgz:
+            if args.mgz_to_nii:
                 
                 batch_mgz_to_nii(data_path, file)
 
