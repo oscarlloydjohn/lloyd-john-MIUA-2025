@@ -27,7 +27,7 @@ class Subject:
         # Manually assign the column headers
         header = ['Index', 'SegId', 'NVoxels', 'Volume_mm3', 'StructName', 'normMean', 'normStdDev', 'normMin', 'normMax', 'normRange']
         
-        self.aseg_stats = pd.read_csv(os.path.join(path, 'stats/aseg+DKT.stats'), delimiter='\s+', comment='#', header=None, names=header)
+        self.aseg_stats = pd.read_csv(os.path.join(path, 'stats/aseg+DKT.stats'), delimiter=r'\s+', comment='#', header=None, names=header)
         
         
         # Existing after object creation

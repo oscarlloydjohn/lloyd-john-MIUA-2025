@@ -34,7 +34,7 @@ def extract_region(subject, values_list, brain, aparc, is_aligned=False):
     # Look up the name of the region for the filename
     lut_path = "/uolstore/home/student_lnxhome01/sc22olj/Compsci/year3/individual-project-COMP3931/individual-project-sc22olj/preprocessing_post_fastsurfer/FreeSurferColorLUT.txt"
     
-    lut = pd.read_csv(lut_path, delimiter='\s+', comment='#', header=None)
+    lut = pd.read_csv(lut_path, delimiter=r'\s+', comment='#', header=None)
     
     region_names = lut[lut[0].isin(values_list)][1]
 
