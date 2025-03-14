@@ -8,6 +8,7 @@ class ModelParameters:
     data_string: str
     labels_string: str
     batch_size: int
+    drop_last: bool
     test_size: float
     num_epochs: int
     learning_rate: float
@@ -22,6 +23,7 @@ class ModelParameters:
         self.data_string = None
         self.labels_string = None
         self.batch_size = None
+        self.drop_last = None
         self.test_size = None
         self.num_epochs = None
         self.learning_rate = None

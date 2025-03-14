@@ -61,11 +61,6 @@ model_parameters.model = cnn3d_xmuyzz.ResNetV2.generate_model(
 
 
 # Examples
-'''pointnet2_cls_msg.get_model(len(model_parameters.selected_labels), normal_channel=False)'''
-
-model_parameters.criterion = torch.nn.BCEWithLogitsLoss(weight=)
-
-# Examples
 '''pointnet2_cls_msg.get_loss()'''
 
 '''torch.nn.CrossEntropyLoss()'''
@@ -139,6 +134,11 @@ model_parameters.run_prediction = run_prediction
 Dataloaders
 '''
 train_dataloader, test_dataloader = init_dataloaders(model_parameters, verify_data=False)
+
+# Examples
+'''pointnet2_cls_msg.get_model(len(model_parameters.selected_labels), normal_channel=False)'''
+
+model_parameters.criterion = torch.nn.BCEWithLogitsLoss(weight=get_weights(train_dataloader))
 
 '''
 Train

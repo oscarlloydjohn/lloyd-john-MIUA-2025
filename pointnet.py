@@ -86,7 +86,7 @@ Dataloaders
 '''
 train_dataloader, test_dataloader = init_dataloaders(model_parameters, verify_data=False)
 
-model_parameters.criterion = pointnet2_cls_msg.get_loss(weights=get_weights(train_dataloader))
+model_parameters.criterion = pointnet2_cls_msg.get_loss(weight=get_weights(train_dataloader))
 
 '''
 Train

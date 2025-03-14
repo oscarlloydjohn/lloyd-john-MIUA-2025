@@ -15,7 +15,7 @@ from .split_dataset import *
 from .subject_dataset import *
 from .model_parameters import *
 
-def train_nn(model_parameters: ModelParameters, train_dataloader: Dataset, test_dataloader: Dataset) -> dict:
+def train_nn(model_parameters: ModelParameters, train_dataloader: Dataset, test_dataloader: Dataset, device) -> dict:
     
     for attr, value in vars(model_parameters).items():
         
@@ -38,8 +38,6 @@ def train_nn(model_parameters: ModelParameters, train_dataloader: Dataset, test_
         "train_time": None,
         "num_training_images": None
     }
-    
-    device = torch.accelerator.current_accelerator().type if torch.accelerator.is_available() else "cpu"
 
     print(f"Using {device} device")
 
