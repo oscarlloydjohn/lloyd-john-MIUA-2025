@@ -13,6 +13,7 @@ from .subject import *
 # Convert a volume of voxels to a pointcloud mesh using walking cubes
 def volume_to_mesh(subject: object, fname_or_attribute, smooth: bool = False, number_of_iterations: int = 1, lambda_filter: float = 0.5, **kwargs) -> dict:
     
+    # Allows filenames or Subject object attributes for convenience
     if os.path.exists(os.path.join(subject.path, fname_or_attribute)):
         
         image_array = nibabel.load(os.path.join(subject.path, fname_or_attribute)).get_fdata()
@@ -21,8 +22,11 @@ def volume_to_mesh(subject: object, fname_or_attribute, smooth: bool = False, nu
         
         image_array = nibabel.load(getattr(subject, fname_or_attribute)).get_fdata()
     
+    # Convert the volume to a mesh
     verts, faces, normals, values = measure.marching_cubes(image_array, **kwargs)
     
+    # Smooth using open3d as sklearn does not have smoothing
+    # Saved back into the same format although values are lost
     if smooth:
         
         mesh = o3d.geometry.TriangleMesh()
@@ -43,8 +47,10 @@ def volume_to_mesh(subject: object, fname_or_attribute, smooth: bool = False, nu
         
         normals = np.asarray(mesh.vertex_normals)
         
+        # Values are discarded
         values = None
     
+    # Save as dict in npz file for easy loading
     fname = os.path.splitext(os.path.basename(fname_or_attribute))[0]
     
     pathname = os.path.join(subject.path, fname + '_mesh.npz')
