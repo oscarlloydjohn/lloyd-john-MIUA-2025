@@ -16,7 +16,7 @@ from preprocessing_post_fastsurfer.subject import *
 from preprocessing_post_fastsurfer.vis import *
 
 class SubjectDataset(Dataset):
-    def __init__(self, data_path, selected_labels, downsample_majority=True, single_img_per_subject=False):
+    def __init__(self, data_path, selected_labels, downsample_majority=True):
         
         # Check format of selected labels
         if len(selected_labels) < 2 or len(selected_labels) > 3:
@@ -38,15 +38,6 @@ class SubjectDataset(Dataset):
         initial_subject_list = find_subjects_parallel(data_path)
         
         final_subject_list = []
-        
-        # Filter the list to only include one image per subject
-        if single_img_per_subject:
-            
-            random.shuffle(initial_subject_list)
-            
-            filtered_subjects = {subject.subject_metadata['Subject'].iloc[0]: subject for subject in initial_subject_list}
-
-            initial_subject_list = list(filtered_subjects.values())
             
         # Include only the subjects that have a label of interest
         # Separate these into individual lists

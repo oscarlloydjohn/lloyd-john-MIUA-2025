@@ -8,8 +8,6 @@ class ModelParameters:
     data_string: str
     labels_string: str
     downsample_majority: bool
-    single_img_per_subject: bool
-    prevent_id_leakage: bool
     batch_size: int
     test_size: float
     num_epochs: int
@@ -25,8 +23,6 @@ class ModelParameters:
         self.data_string = None
         self.labels_string = None
         self.downsample_majority = None
-        self.single_img_per_subject = None
-        self.prevent_id_leakage = None
         self.batch_size = None
         self.test_size = None
         self.num_epochs = None

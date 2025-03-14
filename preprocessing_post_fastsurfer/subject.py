@@ -5,6 +5,7 @@ from pprint import pprint
 import concurrent.futures
 
 # Really should be named Image, because a given subject can have multiple images and this only represents one of them
+# Assumes that there is only one image per subject, therefore this represents a subject
 class Subject:
     
     # Constructor assumes that the directory has already been processed in the specific format using fastsurfer
