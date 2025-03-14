@@ -16,7 +16,10 @@ from preprocessing_post_fastsurfer.subject import *
 from preprocessing_post_fastsurfer.vis import *
 
 class SubjectDataset(Dataset):
-    def __init__(self, data_path, selected_labels, downsample_majority=True):
+    def __init__(self, data_path, selected_labels, load_in_memory=False):
+        
+        # Store whether to save all the data in memory
+        self.load_in_memory = load_in_memory
         
         # Check format of selected labels
         if len(selected_labels) < 2 or len(selected_labels) > 3:
@@ -60,6 +63,15 @@ class SubjectDataset(Dataset):
         random.shuffle(final_subject_list)
         
         self.subject_list = final_subject_list
+        
+        subject.mem_dict = None
+        
+        # Load all the data into the dataset rather than only per subject when needed
+        if load_in_memory:
+            
+            for index, subject in enumerate(self.subject_list):
+            
+                subject.mem_dict = self.load_subject(index)
 
     def __len__(self):
         
@@ -67,8 +79,20 @@ class SubjectDataset(Dataset):
 
     def __getitem__(self, index):
         
-        subject = self.subject_list[index]
+        if self.load_in_memory:
+            
+            subject = self.subject_list[index]
+            
+            return subject.mem_dict
         
+        else:
+            
+            return self.load_subject(index)
+            
+        
+    def load_subject(self, index):
+        
+        subject = self.subject_list[index]
         
         """IMAGES"""
         
@@ -141,6 +165,8 @@ class SubjectDataset(Dataset):
             'volumes': np.array(volume_col_normalised),
             'research_group': research_group,
         }
+        
+        
         
     def load_mri_to_tensor(self, path):
         

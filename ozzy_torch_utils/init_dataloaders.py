@@ -5,7 +5,7 @@ from torch.utils.data import DataLoader
 from .split_dataset import *
 from .subject_dataset import *
 
-def init_dataloaders(model_parameters, num_workers = 4, verify_data=False):
+def init_dataloaders(model_parameters, num_workers = 4, load_in_memory = False, verify_data=False):
     
     for attr, value in vars(model_parameters).items():
         
@@ -20,7 +20,7 @@ def init_dataloaders(model_parameters, num_workers = 4, verify_data=False):
             
             return
     
-    dataset = SubjectDataset(model_parameters.data_path, model_parameters.selected_labels)
+    dataset = SubjectDataset(model_parameters.data_path, model_parameters.selected_labels, load_in_memory = load_in_memory)
     
     # Check the length of the dataset, and the unique labels and IDs
     if verify_data:
