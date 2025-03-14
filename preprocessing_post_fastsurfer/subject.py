@@ -82,6 +82,12 @@ def get_cohort_df(data_path):
 
 # Given a subject directory, if it contains the correct structure then initialise an object
 def init_subject(subject_path, cohort_df):
+    
+    def error(item: str):
+        
+        print(f"Subdirectory {item} does not match the expected format of a fastsurfer processed file. Check that processing was successful\n")
+        
+        return
         
     # MRI directory of subject path (checking validity)
     mri_path = os.path.join(subject_path, 'mri')
@@ -109,6 +115,8 @@ def init_subject(subject_path, cohort_df):
                 return
             
             return Subject(subject_path, subject_metadata)
+        
+    error(subject_path)
     
     return None
 
