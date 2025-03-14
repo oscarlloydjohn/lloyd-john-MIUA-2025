@@ -9,6 +9,11 @@ def init_dataloaders(model_parameters, verify_data=False):
     
     for attr, value in vars(model_parameters).items():
         
+        # Criterion is the only parameter that needs to be set after dataloader init
+        if attr == 'criterion':
+            
+            continue
+        
         if value is None:
             
             print(f"Error: model parameter {attr} incomplete")
@@ -48,3 +53,23 @@ def init_dataloaders(model_parameters, verify_data=False):
         print(f"Id intersection between train and test: {np.intersect1d(np.unique(train_ids), np.unique(test_ids))}\n")
         
     return train_dataloader, test_dataloader
+
+def get_weights(train_dataloader):
+    
+    labels = torch.empty(0, dtype=torch.int32)
+    
+    for batch_idx, dict in enumerate(train_dataloader):
+        
+        labels = torch.cat((labels, dict['research_group']))
+        
+    counts = torch.bincount(labels)
+    
+    print(counts)
+    
+    weights = len(labels) / counts.float()
+    
+    print(weights)
+        
+    return weights
+        
+    

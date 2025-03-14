@@ -50,19 +50,6 @@ class SubjectDataset(Dataset):
             if label in selected_labels:
                 
                 label_subgroups[label].append(subject)
-            
-        # Downsample the list to reduce class imbalance
-        if downsample_majority:
-            
-            # Size of smallest label subgroup
-            min_class_size = min(len(label_subgroups[label]) for label in selected_labels)
-            
-            for label in selected_labels:
-                
-                if len(label_subgroups[label]) > min_class_size:
-                    
-                    label_subgroups[label] = random.sample(label_subgroups[label], min_class_size)
-        
         
         # Append the subject list with each label's subgroup
         for label in selected_labels:
@@ -147,7 +134,7 @@ class SubjectDataset(Dataset):
             'hcampus_vox_aligned': hcampus_vox_aligned,
             'hcampus_pointcloud': hcampus_pointcloud,
             'hcampus_pointcloud_aligned': hcampus_pointcloud_aligned,
-            'volumes': np.array(volume_col_normalised), # Cannot convert dataframe to tensor, need to process
+            'volumes': np.array(volume_col_normalised),
             'research_group': research_group,
         }
         

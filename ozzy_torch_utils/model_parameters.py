@@ -7,7 +7,6 @@ class ModelParameters:
     selected_labels: list
     data_string: str
     labels_string: str
-    downsample_majority: bool
     batch_size: int
     test_size: float
     num_epochs: int
@@ -22,7 +21,6 @@ class ModelParameters:
         self.selected_labels = None
         self.data_string = None
         self.labels_string = None
-        self.downsample_majority = None
         self.batch_size = None
         self.test_size = None
         self.num_epochs = None

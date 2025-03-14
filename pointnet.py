@@ -52,8 +52,6 @@ model_parameters.learning_rate = 0.001
 
 model_parameters.model = pointnet2_cls_msg.get_model(len(model_parameters.selected_labels), normal_channel=False)
 
-model_parameters.criterion = pointnet2_cls_msg.get_loss()
-
 model_parameters.optimiser = optim.Adam(
                                 model_parameters.model.parameters(),
                                 lr=model_parameters.learning_rate,
@@ -87,6 +85,8 @@ model_parameters.run_prediction = run_prediction
 Dataloaders
 '''
 train_dataloader, test_dataloader = init_dataloaders(model_parameters, verify_data=False)
+
+model_parameters.criterion = pointnet2_cls_msg.get_loss(weights=get_weights(train_dataloader))
 
 '''
 Train

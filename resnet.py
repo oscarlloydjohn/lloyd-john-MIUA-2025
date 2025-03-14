@@ -41,9 +41,6 @@ model_parameters.data_string = 'hcampus_vox'
 # Dictionary key representing the disease labels
 model_parameters.labels_string = 'research_group'
 
-# Prevent class imbalance
-model_parameters.downsample_majority = True
-
 model_parameters.batch_size = 10
 
 model_parameters.test_size = 0.3
@@ -51,8 +48,6 @@ model_parameters.test_size = 0.3
 model_parameters.num_epochs = 100
 
 model_parameters.learning_rate = 0.001
-
-model_parameters.threshold = 0.5
 
 model_parameters.model = cnn3d_xmuyzz.ResNetV2.generate_model(
                                     model_depth=18,
@@ -68,7 +63,7 @@ model_parameters.model = cnn3d_xmuyzz.ResNetV2.generate_model(
 # Examples
 '''pointnet2_cls_msg.get_model(len(model_parameters.selected_labels), normal_channel=False)'''
 
-model_parameters.criterion = torch.nn.BCEWithLogitsLoss()
+model_parameters.criterion = torch.nn.BCEWithLogitsLoss(weight=)
 
 # Examples
 '''pointnet2_cls_msg.get_loss()'''
