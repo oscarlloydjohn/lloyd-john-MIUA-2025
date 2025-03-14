@@ -5,7 +5,7 @@ from torch.utils.data import DataLoader
 from .split_dataset import *
 from .subject_dataset import *
 
-def init_dataloaders(model_parameters, verify_data=False, drop_last=False):
+def init_dataloaders(model_parameters, num_workers = 4, verify_data=False):
     
     for attr, value in vars(model_parameters).items():
         
@@ -39,9 +39,9 @@ def init_dataloaders(model_parameters, verify_data=False, drop_last=False):
     train_data, test_data = split_dataset(dataset, test_size=model_parameters.test_size)
 
     # drop_last to prevent last batch tensors from messing up the metrics
-    train_dataloader = DataLoader(train_data, batch_size=model_parameters.batch_size, shuffle=True, drop_last=drop_last, collate_fn=collate_fn([model_parameters.data_string, model_parameters.labels_string]))
+    train_dataloader = DataLoader(train_data, batch_size=model_parameters.batch_size, shuffle=True, num_workers = num_workers, drop_last=model_parameters.drop_last, collate_fn=collate_fn([model_parameters.data_string, model_parameters.labels_string]))
 
-    test_dataloader = DataLoader(test_data, batch_size=model_parameters.batch_size, shuffle=False, drop_last=drop_last, collate_fn=collate_fn([model_parameters.data_string, model_parameters.labels_string]))
+    test_dataloader = DataLoader(test_data, batch_size=model_parameters.batch_size, shuffle=False, num_workers = num_workers, drop_last=model_parameters.drop_last, collate_fn=collate_fn([model_parameters.data_string, model_parameters.labels_string]))
     
     # Check the intersection of ids between train and test sets
     if verify_data:

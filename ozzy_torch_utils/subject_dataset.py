@@ -72,8 +72,11 @@ class SubjectDataset(Dataset):
         
         """IMAGES"""
         
+        # Aligned brain
+        brain = self.load_mri_to_tensor(subject.brain_aligned)
+        
         # Aligned cropped brain
-        brain = self.load_mri_to_tensor(subject.brain_aligned_cropped)
+        brain_cropped = self.load_mri_to_tensor(subject.brain_aligned_cropped)
         
         # NB these are all cropped
         hcampus_vox = self.load_mri_to_tensor(os.path.join(subject.path, 'Left-Hippocampus_Right-Hippocampus_cropped.nii'))
@@ -130,6 +133,7 @@ class SubjectDataset(Dataset):
         # Return dict with data, this is filtered by collate_fn
         return {
             'brain': brain,
+            'brain_cropped': brain_cropped,
             'hcampus_vox': hcampus_vox,
             'hcampus_vox_aligned': hcampus_vox_aligned,
             'hcampus_pointcloud': hcampus_pointcloud,

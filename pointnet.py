@@ -38,15 +38,15 @@ model_parameters.data_string = 'hcampus_pointcloud'
 # Dictionary key representing the disease labels
 model_parameters.labels_string = 'research_group'
 
-# Prevent class imbalance
-model_parameters.downsample_majority = True
-
 # Lower batch size seemed to give better results
 model_parameters.batch_size = 5
 
-model_parameters.test_size = 0.3
+# Can drop last batch of the dataset as it will be smaller than the rest
+model_parameters.drop_last = False
 
-model_parameters.num_epochs = 5
+model_parameters.test_size = 0.2
+
+model_parameters.num_epochs = 150
 
 model_parameters.learning_rate = 0.001
 
@@ -61,6 +61,9 @@ model_parameters.optimiser = optim.Adam(
                                 amsgrad=True
                             )
 
+'''
+Prediction configuration
+'''
 def run_prediction(inputs, labels):
     
     # Transpose as in benny script (NB why does it need a transpose)
@@ -68,7 +71,7 @@ def run_prediction(inputs, labels):
     
     logit_output, *_ = model_parameters.model(inputs)
     
-    loss = model_parameters.criterion(logit_output, labels, None)
+    loss = model_parameters.criterion(logit_output, labels)
     
     # Apply exponent as the output of the model is log softmax
     pred_probability = torch.exp(logit_output)
@@ -79,19 +82,26 @@ def run_prediction(inputs, labels):
     return loss, pred_probability, pred_labels
 
 model_parameters.run_prediction = run_prediction
-    
+
 
 '''
 Dataloaders
 '''
 train_dataloader, test_dataloader = init_dataloaders(model_parameters, verify_data=False)
 
-model_parameters.criterion = pointnet2_cls_msg.get_loss(weight=get_weights(train_dataloader))
+'''
+Loss function configuration
+'''
+
+device = torch.accelerator.current_accelerator().type if torch.accelerator.is_available() else "cpu"
+
+# Set the criterion after getting the weights
+model_parameters.criterion = torch.nn.NLLLoss(weight=(get_weights(train_dataloader)).to(device))
 
 '''
 Train
 '''
-metrics = train_nn(model_parameters, train_dataloader, test_dataloader, mode='pointnet', unsqueeze=False)
+metrics = train_nn(model_parameters, train_dataloader, test_dataloader, device)
 
 '''
 Plot

@@ -22,6 +22,8 @@ from ozzy_torch_utils.model_parameters import *
 from ozzy_torch_utils.init_dataloaders import *
 
 '''
+THIS IS OLD, NEED TO REDO
+
 Params
 '''
 
