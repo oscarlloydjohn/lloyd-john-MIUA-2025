@@ -2,8 +2,33 @@ import os
 import shutil
 import argparse
 
+"""
+Directory Compaction Utility Script
+=============================
+
+A standalone script providing functions flatten a directory. All files in the directory and its subdirectories are moved to the top-level directory, and empty directories are removed.
+
+Usage
+-----
+
+Run the script with the required arguments to delete files matching a specific filename recursively in a directory:
+
+.. code-block:: bash
+
+    python3 compact_dir.py --data_path /path/to/directory
+
+"""
+
 # Recursively search all subdirectories for files and put them in data_path. Delete empty directories
-def compact_dir(data_path):
+def compact_dir(data_path: os.pathlike[str]) -> None:
+    """
+    Compacts the directory by moving all files from subdirectories to the top-level directory and removing any empty subdirectories.
+
+    :param data_path: The path to the directory to be compacted.
+    :type data_path: os.PathLike[str]
+    :return: None
+    """
+
     
     # Walk through the directory and its subdirectories
     for root, dirs, files in os.walk(data_path, topdown=False):

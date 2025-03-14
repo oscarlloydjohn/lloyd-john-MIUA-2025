@@ -3,8 +3,30 @@ import concurrent.futures
 from concurrent.futures import ThreadPoolExecutor
 import argparse
 
-# Delete a file
-def delete_file(file_path):
+"""
+File Deletion Utility Script 1
+=============================
+
+A standalone script providing functions to delete files in a directory that match a filename. Deletions are performed in parallel using a ThreadPoolExecutor.
+
+Usage
+-----
+
+.. code-block:: bash
+
+    python3 delete_files_called.py --data_path /path/to/directory --filename file1.txt
+
+"""
+
+
+def delete_file(file_path: os.PathLike[str]) -> None:
+    """
+    Deletes a single file at the given path.
+
+    :param file_path: The path to the file to be deleted.
+    :type file_path: os.PathLike[str]
+    :returns: None
+    """
     
     try:
         os.remove(file_path)
@@ -15,8 +37,18 @@ def delete_file(file_path):
         
         print(f"Failed to delete {file_path}: {e}")
 
-# Delete filenames matching list recursively
-def delete_files_in_directory(data_path, filenames_to_delete):
+    return
+
+def delete_files_in_directory(data_path: os.pathlike[str], filenames_to_delete: list[str]) -> None:
+    """
+    Deletes files with the specified filenames in the given directory and all subdirectories. Works in parallel
+
+    :param data_path: The path to the directory where the search for files will begin.
+    :type data_path: os.PathLike[str]
+    :param filenames_to_delete: A list of filenames to be deleted
+    :type filenames_to_delete: list[str]
+    :returns: None
+    """
 
     files_to_delete = []
 
@@ -32,30 +64,7 @@ def delete_files_in_directory(data_path, filenames_to_delete):
         
         executor.map(delete_file, files_to_delete)
 
-# Remove files containing a specified string
-def remove_files_containing(data_path, string):
-    
-    files = [f for f in os.listdir(data_path) if os.path.isfile(os.path.join(data_path, f))]
-    
-    files_to_remove = [f for f in files if string in f]
-    
-    def delete_file(file_name):
-        
-        try:
-            
-            file_path = os.path.join(data_path, file_name)
-            
-            os.remove(file_path)
-            
-            print(f"Deleted: {file_name}")
-            
-        except Exception as e:
-            
-            print(f"Error deleting {file_name}: {e}")
-
-    with ThreadPoolExecutor() as executor:
-        
-        executor.map(delete_file, files_to_remove)
+    return
 
 if __name__ == "__main__":
     

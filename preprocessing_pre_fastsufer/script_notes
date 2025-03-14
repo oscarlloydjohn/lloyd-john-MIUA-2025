@@ -1,3 +1,0 @@
-Run this to start the processing, remember to change data_path in run_processing.sh
-
-nohup ./run_processing.sh > [log_path] 2>&1 & disown

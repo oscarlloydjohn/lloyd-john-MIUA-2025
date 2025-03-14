@@ -3,8 +3,32 @@ import concurrent.futures
 from concurrent.futures import ThreadPoolExecutor
 import argparse
 
-# Remove files containing a specified string
-def delete_files_containing(data_path, string):
+"""
+File Deletion Utility Script 2
+=============================
+
+A standalone script providing functions to delete files in a directory that contain a matching string in their filename. Deletions are performed in parallel using a ThreadPoolExecutor.
+
+Usage
+-----
+
+.. code-block:: bash
+
+    python3 delete_files_containing.py --data_path /path/to/directory --string scaled
+
+"""
+
+def delete_files_containing(data_path: os.PathLike[str], string: str) -> None:
+
+    """
+    Similar to delete_files_in_directory, but removes files containing the specified string in the filename rather than the exact filename. Works in parallel
+
+    :param data_path: The path to the directory containing the files.
+    :type data_path: os.pathlike[str]
+    :param string: The string to search for in the file names.
+    :type string: str
+    :returns: None
+    """
     
     files = [f for f in os.listdir(data_path) if os.path.isfile(os.path.join(data_path, f))]
     
@@ -27,6 +51,8 @@ def delete_files_containing(data_path, string):
     with ThreadPoolExecutor() as executor:
         
         executor.map(delete_file, files_to_remove)
+
+    return
 
 if __name__ == "__main__":
     

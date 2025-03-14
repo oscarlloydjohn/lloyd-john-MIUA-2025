@@ -4,9 +4,64 @@ import shutil
 from concurrent.futures import ThreadPoolExecutor
 import argparse
 
+"""
+Fastsurfer Processing Pipeline Script
+======================================
 
-# Use freesurfer mri_convert in parallel
-def batch_mgz_to_nii(data_path, batchname):
+A standalone script that can perform FastSurfer processing on a batch of .nii files.  
+The script supports multithreading via FastSurfer’s built-in capabilities.  
+It tracks processed files by logging them into a completed.log file within the data_path directory,  
+allowing the script to resume without reprocessing completed files. If the file does not exist then it will start from scratch.
+
+See the accompanying run_processing.sh script which creates an apptainer for running this script.
+
+
+Arguments
+---------
+
+- **--data_path** (*str*) **(required)**:  
+    The path to the directory containing NIfTI files for processing.
+
+- **--license_path** (*str*) **(required)**:
+    The path to the FreeSurfer license file.
+
+- **--threads** (*int*) **(required)**:  
+    Number of threads to use for parallel processing.
+
+- **--tesla3** (*flag*):
+    Indicate to FastSurfer that the input images are 3T MRI scans, where its default is 1.5T scans.
+
+- **--mgz_to_nii** (*flag*):
+    Make a copy of all resulting .mgz files as .nii files in the same directory.
+
+- **--keep_orig** (*flag*):
+    Keep the original .nii files after processing. By default, the original files are deleted.
+
+
+Usage
+-----
+
+Run the script inside a container compatible with fastsurfer, with the required arguments:
+
+.. code-block:: bash
+
+    python3 preprocess.py --data_path /path/to/directory --license_path /path/to/license --threads N [--tesla3] [mgz_to_nii] [--keep_orig]
+
+
+"""
+
+
+def batch_mgz_to_nii(data_path: os.PathLike[str], batchname: str) -> None:
+    """
+    Convert all .mgz files in a specified directory to .nii format using mri_convert from freesurfer.
+
+    :param data_path: The path to the dataset directory.
+    :type data_path: os.PathLike[str]
+    :param batchname: The name of the upper level image directory, i.e the original filename of the nii file excluding the extension. After processing this will simply be a directory rather than a file.
+    :type batchname: str
+    :returns: None
+    
+    """
     
     dirname = os.path.splitext(os.path.basename(batchname))[0]
     
@@ -40,15 +95,35 @@ def batch_mgz_to_nii(data_path, batchname):
     
     return
 
-# Gets a list of nii files in data_path. Non recursive
-def list_nii(data_path):
+def list_nii(data_path: os.PathLike[str]) -> list:
+    """
+    List all .nii files in the directory.
+
+    :param data_path: The path to the dataset directory.
+    :type data_path: os.PathLike[str]
+    :returns: List of .nii files in the directory.
+    :rtype: list
+
+    """
+
     
     nii_files = [f for f in os.listdir(data_path) if f.endswith('.nii')]
         
     return nii_files
 
-# Runs fastsurfer seg only on a given nii file, putting output in a directory of the same name
-def process_file(data_path, filename, license_path, threads, tesla3=False):
+def process_file(data_path: os.PathLike[str], filename: str, license_path: os.PathLike[str], threads: int, tesla3: bool = False):
+    """
+    Runs fastsurfer seg only on a given nii file, putting output in a directory of the same name. Allows fastsurfer multithreading using the --threads flag.
+
+    :param data_path: The path to the dataset directory.
+    :type data_path: os.PathLike[str]
+    :param filename: The filename of the nii file to be processed.
+    :type filename: str
+    :param license_path: The path to the freesurfer license file
+    :type license_path: os.PathLike[str]
+    :returns: None
+
+    """
     
     dirname = os.path.splitext(os.path.basename(filename))[0]
 
@@ -78,8 +153,18 @@ def process_file(data_path, filename, license_path, threads, tesla3=False):
     
     return
 
-# Move an nii file into the directory under the same name
-def move_nii(data_path, filename):
+def move_nii(data_path: os.PathLike[str], filename: str) -> None:
+    """
+    Moves a .nii file to the directory of the same name, intended to be used after preprocessing. Will only be used if the --keep_orig flag is set.
+
+    :param data_path: The path to the dataset directory.
+    :type data_path: os.PathLike[str]
+    :param filename: The filename of the nii file to be moved.
+    :type filename: str
+    :returns: None
+
+    """
+
     
     dirname = os.path.splitext(os.path.basename(filename))[0]
 
@@ -105,7 +190,19 @@ def move_nii(data_path, filename):
         
     return
 
-def batch_run(data_path, nii_list, args):
+def batch_run(data_path: os.PathLike[str] , nii_list: list, args: argparse.Namespace) -> None:
+    """
+    Runs the fastsurfer pipeline on a batch of nii files, logging the processed files in a completed.log file such that the script can be resumed without reprocessing completed files. Allows original files to be kept or deleted, and .mgz files to be converted to .nii files if desired.
+
+    :param data_path: The path to the dataset directory.
+    :type data_path: os.PathLike[str]
+    :param nii_list: A list of .nii files to be processed, obtained from list_nii.
+    :type nii_list: list
+    :param args: The arguments passed to the script.
+    :type args: argparse.Namespace
+    :returns: None
+    
+    """
     
     # Read the completed.txt file to get a list of already processed files
     completed_files = set()
@@ -168,7 +265,6 @@ if __name__ == "__main__":
     parser.add_argument('--threads', type=int, required=True)
     parser.add_argument('--data_path', type=str, required=True)
     parser.add_argument('--license_path', type=str, required=True)
-    parser.add_argument('--container_path', type=str, required=True)
 
     args = parser.parse_args()
 
