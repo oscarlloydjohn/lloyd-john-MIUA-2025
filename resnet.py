@@ -44,12 +44,6 @@ model_parameters.labels_string = 'research_group'
 # Prevent class imbalance
 model_parameters.downsample_majority = True
 
-# NB this argument makes prevent_id_leakage redundant
-model_parameters.single_img_per_subject = False
-
-# Prevent the same subject id from occuring in train and test, in case of more than one image per id
-model_parameters.prevent_id_leakage = True
-
 model_parameters.batch_size = 10
 
 model_parameters.test_size = 0.3

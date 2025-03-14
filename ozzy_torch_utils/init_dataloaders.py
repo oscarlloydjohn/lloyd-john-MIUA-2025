@@ -15,7 +15,7 @@ def init_dataloaders(model_parameters, verify_data=False):
             
             return
     
-    dataset = SubjectDataset(model_parameters.data_path, model_parameters.selected_labels, downsample_majority=model_parameters.downsample_majority, single_img_per_subject=model_parameters.single_img_per_subject)
+    dataset = SubjectDataset(model_parameters.data_path, model_parameters.selected_labels, downsample_majority=model_parameters.downsample_majority)
     
     # Check the length of the dataset, and the unique labels and IDs
     if verify_data:
@@ -31,7 +31,7 @@ def init_dataloaders(model_parameters, verify_data=False):
         print(f"Unique ids: {np.unique(ids, return_counts=True)}\n")
     
     # Init train and test dataloaders
-    train_data, test_data = split_dataset(dataset, test_size=model_parameters.test_size, prevent_id_leakage=model_parameters.prevent_id_leakage)
+    train_data, test_data = split_dataset(dataset, test_size=model_parameters.test_size)
 
     # drop_last to prevent last batch tensors from messing up the metrics
     train_dataloader = DataLoader(train_data, batch_size=model_parameters.batch_size, shuffle=True, drop_last=True, collate_fn=collate_fn([model_parameters.data_string, model_parameters.labels_string]))

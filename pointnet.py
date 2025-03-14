@@ -27,7 +27,7 @@ Params
 
 model_parameters = ModelParameters()
 
-model_parameters.data_path = "/uolstore/home/student_lnxhome01/sc22olj/Compsci/year3/individual-project-COMP3931/individual-project-sc22olj/scratch-disk/full-datasets/hcampus-large-cohort"
+model_parameters.data_path = "/uolstore/home/student_lnxhome01/sc22olj/Compsci/year3/individual-project-COMP3931/individual-project-sc22olj/scratch-disk/full-datasets/hcampus-1.5T-cohort"
 
 # Disease labels from study
 model_parameters.selected_labels = ['CN', 'MCI']
@@ -41,18 +41,12 @@ model_parameters.labels_string = 'research_group'
 # Prevent class imbalance
 model_parameters.downsample_majority = True
 
-# NB this argument makes prevent_id_leakage redundant
-model_parameters.single_img_per_subject = False
-
-# Prevent the same subject id from occuring in train and test, in case of more than one image per id
-model_parameters.prevent_id_leakage = True
-
 # Lower batch size seemed to give better results
 model_parameters.batch_size = 5
 
 model_parameters.test_size = 0.3
 
-model_parameters.num_epochs = 200
+model_parameters.num_epochs = 5
 
 model_parameters.learning_rate = 0.001
 
