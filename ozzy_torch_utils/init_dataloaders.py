@@ -20,7 +20,13 @@ def init_dataloaders(model_parameters, num_workers = 4, load_in_memory = False, 
             
             return
     
-    dataset = SubjectDataset(model_parameters.data_path, model_parameters.selected_labels, load_in_memory = load_in_memory)
+    if load_in_memory:
+        
+        dataset = SubjectDataset(model_parameters.data_path, model_parameters.selected_labels, load_in_memory = load_in_memory, data_string=model_parameters.data_string, labels_string=model_parameters.labels_string)
+        
+    else:
+        
+        dataset = SubjectDataset(model_parameters.data_path, model_parameters.selected_labels, load_in_memory = load_in_memory)
     
     # Check the length of the dataset, and the unique labels and IDs
     if verify_data:

@@ -10,13 +10,14 @@ import nibabel
 import os
 import numpy as np
 import random
+from tqdm import tqdm
 
 # Custom modules
 from preprocessing_post_fastsurfer.subject import *
 from preprocessing_post_fastsurfer.vis import *
 
 class SubjectDataset(Dataset):
-    def __init__(self, data_path, selected_labels, load_in_memory=False):
+    def __init__(self, data_path, selected_labels, load_in_memory=False, data_string=None, labels_string=None):
         
         # Store whether to save all the data in memory
         self.load_in_memory = load_in_memory
@@ -69,9 +70,14 @@ class SubjectDataset(Dataset):
         # Load all the data into the dataset rather than only per subject when needed
         if load_in_memory:
             
-            for index, subject in enumerate(self.subject_list):
+            print("Loading dataset into memory\n")
             
-                subject.mem_dict = self.load_subject(index)
+            for index, subject in tqdm(enumerate(self.subject_list), total=len(self.subject_list)):
+                
+                subject_dict = self.load_subject(index)
+
+                # Keep only the data we are interested in. Note that this is inefficient as we should probably just not load the data we dont' want in the first place
+                subject.mem_dict = {data_string: subject_dict[data_string], labels_string: subject_dict[labels_string]}
 
     def __len__(self):
         
