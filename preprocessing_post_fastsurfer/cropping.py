@@ -6,19 +6,39 @@ import concurrent.futures
 
 # Custom modules
 from .vis import *
+from .subject import *
+
+"""
+
+Cropping
+===========
+
+This module provides functions for cropping of brain images to a bounding box. The functions are designed to be used with the Subject class. The bounding box is calculated across a list of subjects, where the maximum bounding box is found across all images such that all images can be cropped to the same size. This is useful when training a neural network on the dataset. 
+
+Note that the max bounding box functions are not intended to be used before images have been aligned, as the bounding box will not tightly wrap these images due to their difference in position.
+
+:author: Oscar Lloyd-John
+
+"""
 
 # Not for use with images of range greater than 0-255 as saves as uint8
-def crop(subject, relative_path, max_bbox, is_full_brain):
+def crop(subject: Subject, relative_path: os.PathLike[str], max_bbox: tuple[int, int, int, int, int, int], is_full_brain: bool = False):
+
     """
 
-    Args:
-        subject (_type_): _description_
-        relative_path (_type_): _description_
-        max_bbox (_type_): _description_
-        is_full_brain (bool): _description_
+    Crops an image to the supplied bounding box which can be obtained using the get_max_bbox function. The cropped image is saved in the same directory as the original image with '_cropped' appended to the filename. If the image is a full brain, it is referred to in a subject attribute,
 
-    Returns:
-        _type_: _description_
+    :param subject: The subject containing the image to be cropped, or to store the cropped image in
+    :type subject: Subject
+    :param relative_path: The relative path to the image from the subject directory, usually will just be the filename
+    :type relative_path: os.PathLike[str]
+    :param max_bbox: The bounding box to crop the image to
+    :type max_bbox: tuple[int, int, int, int, int, int]
+    :param is_full_brain: Whether or not the image is a full brain, in which case it will be stored in the corresponding subject attribute, defaults to False
+    :type is_full_brain: bool
+    :return: A nibabel image of the cropped image
+    :rtype: Nibabel image
+
     """
     
     image = nibabel.load(os.path.join(subject.path, relative_path))
@@ -54,7 +74,18 @@ def crop(subject, relative_path, max_bbox, is_full_brain):
     return cropped_image
 
 # Finds the bounding box of the image data
-def bounding_box(image_array):
+def bounding_box(image_array: np.ndarray) -> tuple[int, int, int, int, int, int]:
+
+    """
+
+    Finds the bounding box of a 3d array, which is the smallest box that contains all non-zero elements of the array. The bounding box is returned as a tuple of the minimum and maximum x, y and z coordinates of the box.
+
+    :param image_array: A 3d array representing an image
+    :type image_array: np.ndarray
+    :return: The bounding box of the image array
+    :rtype: tuple[int, int, int, int, int, int]
+
+    """
 
     non_zero_indices = np.nonzero(image_array)
     
@@ -63,8 +94,19 @@ def bounding_box(image_array):
     
     return (min_x, min_y, min_z, max_x, max_y, max_z)
 
-def get_max_bbox(subject_list, relative_path):
-    
+def get_max_bbox(subject_list: list[Subject], relative_path: str) -> tuple[int, int, int, int, int, int]:
+
+    """
+    Finds the maximum bounding box of all images, such that all images can be cropped to the same size. The bounding box is returned as a tuple of the minimum and maximum x, y and z coordinates of the box. This bounding box is such it is as small as possible whilst ensuring that no image will have any non-zero data removed
+
+    :param subject_list: A list of subjects to find the max bounding box of
+    :type subject_list: list[Subject]
+    :param relative_path: The relative path to the image from the subject directory, usually will just be the filename
+    :type relative_path: str
+    :return: The maximum bounding box of all images
+    :rtype: tuple[int, int, int, int, int, int]
+    """
+
     max_bbox = (np.inf, np.inf, np.inf, -np.inf, -np.inf, -np.inf)
     
     # Find optimal bbox in serial
@@ -86,10 +128,29 @@ def get_max_bbox(subject_list, relative_path):
         
     return max_bbox
 
-# Crop images to the minimum size whilst retaining whole dataset
-# Can only be done on the whole dataset as the dataset has to be checked before
-# Cropping is performed in parallel
-def crop_subjects_parallel(subject_list, relative_path, max_bbox, is_full_brain=False, display=False, display_3d=False):
+def crop_subjects_parallel(subject_list: list[Subject], relative_path: os.PathLike[str], max_bbox: tuple[int, int, int, int, int, int], is_full_brain: bool = False, display: bool = False, display_3d: bool = False) -> None:
+
+    """
+
+    Crops a list of subjects to the same bounding box in parallel using a processpoolexecutor. The bounding box is passed in as an argument rather than being calculated in this function such that the bounding box can be calculated once and used across multiple calls to this function (in the case that the dataset is chunked).
+
+    Simply runs crop on each subject in the list.
+
+    :param subject_list: The list of subjects to crop
+    :type subject_list: list[Subject]
+    :param relative_path: The relative path to the image from the subject directory, usually will just be the filename
+    :type relative_path: os.PathLike[str]
+    :param max_bbox: The bounding box to crop the image to
+    :type max_bbox: tuple[int, int, int, int, int, int]
+    :param is_full_brain: Whether or not the image is a full brain, in which case it will be stored in the corresponding subject attribute, defaults to False
+    :type is_full_brain: bool
+    :param display: Whether or not to display the image upon cropping, defaults to False
+    :type display: bool
+    :param display_3d: Whether or not to display the image in 3d upon cropping, defaults to False
+    :type display_3d: bool
+    :return: None
+    
+    """
         
     with concurrent.futures.ProcessPoolExecutor() as executor:
         

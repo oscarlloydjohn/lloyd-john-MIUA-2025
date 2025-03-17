@@ -4,10 +4,21 @@ import glob
 from pprint import pprint
 import concurrent.futures
 
+"""
+
+Subject
+===========
+
+This module provides a class and some initialisation functions designed to be used with a dataset directory that has been created using the preprocess_pre_fastsurfer module. The Subject class is a representation of a single subject in the dataset, and contains paths to the processed files for that subject. The init_subject and init_subject_parallel functions are used to create Subject objects from the dataset directory.
+
+:author: Oscar Lloyd-John
+
+"""
+
 class Subject:
 
     """
-    A class that represents an ADNI (or other) subject. Note that this class effectively represents one instance of an MRI image of a subject and its accompanyinh processed files. It is not a general representation of a subject, which could have multiple images however it is expected that only one image per subject will be studied because overfitting of a machine learning model is likely otherwise. See "Hippocampal representations for deep learning on Alzheimer’s disease", Sarasua et. al. 2021 for more information.
+    A class that represents an ADNI (or other) subject. Note that this class effectively represents one instance of an MRI image of a subject and its accompanying processed files. It is not a general representation of a subject, which could have multiple images however it is expected that only one image per subject will be studied because overfitting of a machine learning model is likely otherwise. See "Hippocampal representations for deep learning on Alzheimer’s disease", Sarasua et. al. 2021 for more information.
 
     Note that this class expects the provided directory to be of the correct structure, and therefore is not intended to be used standalone but to be instantiated using the init_subject or init_subject_parallel functions.
 

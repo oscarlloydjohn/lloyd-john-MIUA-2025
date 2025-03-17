@@ -7,13 +7,25 @@ import pyvista as pv
 import matplotlib.pyplot as plt
 import os
 
-# Load an image into nibabel
-def load_image(data_path: os.PathLike[str], filename: str):
-    
-    return nibabel.load(f"{data_path}/{filename}")
+"""
+Visualisation
+===========
 
-# Display the middle slice of a nibabel image
+This module provides for visualising neuroimaging data within python. The functions are designed to be used with the Subject class. Has options for displaying 2D and 3D images, as well as point clouds and meshes.
+
+:author: Oscar Lloyd-John
+"""
+
 def display_image(image) -> None:
+
+    """
+    Display a 2D slice of a 3D image nibabel image. Simply is a wrapper for display_array.
+
+    :param image: The image to be displayed
+    :type image: Nibabel image
+    :return: None
+
+    """
 
     # Get image data array from image object
     image_array = np.asarray(image.dataobj)
@@ -22,8 +34,17 @@ def display_image(image) -> None:
     
     return 
 
-# Display the middle slice of a 3d array
 def display_array(array: np.ndarray) -> None:
+
+    """
+    
+    Display a 2D slice of a 3D array using the IPython display function. The slice is taken in the middle of the array, and is normalised such that the maximum pixel value is 255.
+
+    :param array: The array to be displayed
+    :type array: np.ndarray
+    :return: None
+
+    """
     
     # Get middle slice
     slice = array[array.shape[0] // 2, :, :]
@@ -34,7 +55,21 @@ def display_array(array: np.ndarray) -> None:
     
     return 
 
-def display_image_3d(image, downsample_factor, mode='interactive'):
+def display_image_3d(image, downsample_factor: int, mode: str = 'interactive'):
+
+    """
+    
+    Wrapper for display_array_3d, converts a nibabel image to a numpy array and displays it in 3D.
+
+    :param image: The image to be displayed
+    :type image: Nibabel image
+    :param downsample_factor: The factor by which to downsample the image
+    :type downsample_factor: int
+    :param mode: The mode of display, either interactive or preview
+    :type mode: str
+    :return: None
+
+    """
     
     # Get image data array from image object
     image_array = np.asarray(image.dataobj)
@@ -46,7 +81,20 @@ def display_image_3d(image, downsample_factor, mode='interactive'):
     return
 
 
-def display_array_3d(array, downsample_factor, mode='interactive'):
+def display_array_3d(array: np.ndarray, downsample_factor: int, mode: str ='interactive') -> None:
+
+    """
+    Displays a 3d voxel array using pyvista. The array is downsampled by the downsample factor, and the mode of display can be either interactive or preview (not implemented yet). Interactive allows the user to manipulate the image using the pyvista GUI.
+
+    :param array: The array to be displayed
+    :type array: np.ndarray
+    :param downsample_factor: The factor by which to downsample the image
+    :type downsample_factor: int
+    :param mode: The mode of display, either interactive or preview
+    :type mode: str
+    :return: None
+    
+    """
     
     # Preview mode is not implemented yet
     if mode == 'preview':
@@ -71,7 +119,19 @@ def display_array_3d(array, downsample_factor, mode='interactive'):
     
     return 
 
-def display_cloud(cloud, mode='interactive'):
+def display_cloud(cloud: np.ndarray, mode: str = 'interactive') -> None:
+
+    """
+    
+    Displays a point cloud of vertices in the form of a numpy array of dimensions n x 3. The mode of display can be either interactive or preview (not implemented yet). Interactive allows the user to manipulate the image using the pyvista GUI. Mode mpl displays the points in a small matplotlib window for quick previewing.
+
+    :param cloud: The point cloud to be displayed
+    :type cloud: np.ndarray
+    :param mode: The mode of display, either interactive, preview or mpl
+    :type mode: str
+    :return: None
+
+    """
 
     mesh = pv.PolyData(cloud)
     
@@ -106,7 +166,19 @@ def display_cloud(cloud, mode='interactive'):
     
     return
 
-def display_mesh(mesh_dict, mode='interactive'):
+def display_mesh(mesh_dict: dict, mode: str = 'interactive') -> None:
+
+    """
+    
+    Displays a mesh contained in a dictionary, which will have keys 'verts' and 'faces'. See mesh_creation for more information about the expected format, which will usually be an dict loaded from a .npz file. The mode of display can be either interactive or preview (not implemented yet). Interactive allows the user to manipulate the image using the pyvista GUI.
+
+    :param mesh_dict: The mesh to be displayed
+    :type mesh_dict: dict
+    :param mode: The mode of display, either interactive or preview
+    :type mode: str
+    :return: None
+
+    """
     
     # Preview mode is not implemented yet
     if mode == 'preview':
