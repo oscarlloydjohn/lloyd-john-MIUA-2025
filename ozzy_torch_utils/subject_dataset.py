@@ -113,6 +113,10 @@ class SubjectDataset(Dataset):
     
         hcampus_pointcloud = torch.tensor(np.load(os.path.join(subject.path, 'Left-Hippocampus_Right-Hippocampus_cropped_mesh_downsampledcloud.npy')), dtype=torch.float32)
         
+        lhcampus_vox = self.load_mri_to_tensor(os.path.join(subject.path, 'Left-Hippocampus_cropped.nii'))
+    
+        lhcampus_pointcloud = torch.tensor(np.load(os.path.join(subject.path, 'Left-Hippocampus_cropped_mesh_downsampledcloud.npy')), dtype=torch.float32)
+        
         # Won't always have aligned versions
         try:
                                
@@ -120,9 +124,13 @@ class SubjectDataset(Dataset):
                     
             hcampus_pointcloud_aligned = torch.tensor(np.load(os.path.join(subject.path, 'Left-Hippocampus_Right-Hippocampus_aligned_cropped_mesh_downsampledcloud.npy')), dtype=torch.float32)
             
+            lhcampus_vox_aligned = self.load_mri_to_tensor(os.path.join(subject.path, 'Left-Hippocampus_aligned_cropped.nii'))                        
+                    
+            lhcampus_pointcloud_aligned = torch.tensor(np.load(os.path.join(subject.path, 'Left-Hippocampus_aligned_cropped_mesh_downsampledcloud.npy')), dtype=torch.float32)
+            
         except:
             
-            hcampus_vox_aligned, hcampus_pointcloud_aligned = None, None
+            hcampus_vox_aligned, hcampus_pointcloud_aligned, lhcampus_vox_aligned, lhcampus_pointcloud_aligned = None, None, None, None
         
         
         """REGION VOLUME STATS"""
@@ -170,6 +178,10 @@ class SubjectDataset(Dataset):
             'hcampus_vox_aligned': hcampus_vox_aligned,
             'hcampus_pointcloud': hcampus_pointcloud,
             'hcampus_pointcloud_aligned': hcampus_pointcloud_aligned,
+            'lhcampus_vox': lhcampus_vox,
+            'lhcampus_vox_aligned': lhcampus_vox_aligned,
+            'lhcampus_pointcloud': lhcampus_pointcloud,
+            'lhcampus_pointcloud_aligned': lhcampus_pointcloud_aligned,
             'volumes': np.array(volume_col_normalised),
             'struct_names': np.array(struct_name_col),
             'research_group': research_group,
