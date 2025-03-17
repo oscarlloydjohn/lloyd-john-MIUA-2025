@@ -93,7 +93,7 @@ def get_min_cloud_points(subject_list: list, filename: str) -> int:
 # https://medium.com/towards-data-science/how-to-use-pointnet-for-3d-computer-vision-in-an-industrial-context-3568ba37327e
 # Farthest point sampling is suggested
 # NB used open3d as it natively supports this type of sampling
-def downsample_cloud(subject: Subject, filename, n):
+def downsample_cloud(subject: Subject, filename: str, n: int) -> np.ndarray:
     
     mesh_dict = np.load(os.path.join(subject.path, filename))
     
@@ -111,7 +111,7 @@ def downsample_cloud(subject: Subject, filename, n):
     
     return downsampled_cloud
 
-def downsample_cloud_parallel(subject_list, filename, num_samples, display=False):
+def downsample_cloud_parallel(subject_list: list[Subject], filename: str, num_samples: int, display: bool = False) -> None:
     
     with concurrent.futures.ProcessPoolExecutor() as executor:
         

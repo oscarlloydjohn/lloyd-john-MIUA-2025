@@ -10,6 +10,11 @@ from .vis import *
 
 # Extracts brain regions using their number label found from freesurfer LUT
 def extract_region(subject, values_list, brain, aparc, is_aligned=False):
+
+    """
+    The filename is the region name followed by .nii or _aligned.nii depending on whether the region is aligned or not. See the FreeSurferColourLUT.txt file for region names and their corresponding values.
+
+    """
     
     # Doesn't use array proxies as proxies cast to float
     image_array = nibabel.load(brain).dataobj

@@ -5,9 +5,10 @@ import numpy as np
 from IPython.display import display
 import pyvista as pv
 import matplotlib.pyplot as plt
+import os
 
 # Load an image into nibabel
-def load_image(data_path, filename):
+def load_image(data_path: os.PathLike[str], filename: str) -> nibabel.Nifti1Image:
     
     return nibabel.load(f"{data_path}/{filename}")
 

@@ -9,10 +9,25 @@ import shutil
 # Custom modules
 from .vis import *
 from .extraction import *
+from .subject import *
+
+"""
+Alignment
+===========
+
+A brief description of what the module does.
+
+This module provides functions
+- Parsing data
+- Processing results
+- Exporting summaries
+
+:author: Oscar Lloyd-John
+"""
 
 # Performs brain extraction using the orig_nu.mgz and mask.mgz of the subject by multiplying the mask with the image
-def extract_brain(orig_file, mask_file):
-    
+def extract_brain(orig_file: os.PathLike[str], mask_file: os.PathLike[str]) -> np.ndarray:
+
     # Load the image and the brain mask
     image = nibabel.load(orig_file)
     mask = nibabel.load(mask_file)
@@ -27,7 +42,13 @@ def extract_brain(orig_file, mask_file):
     return brain_array
 
 # Affine align a single subject
-def alignment(subject, reference_brain):
+def alignment(subject: Subject, reference_brain: np.ndarray):
+
+    """_summary_
+
+    Returns:
+        _type_: _description_
+    """
         
     # Extract brain of subject and convert it to an ANTsPy image
     # The subject's brain is the moving image
@@ -63,7 +84,7 @@ def alignment(subject, reference_brain):
     return aligned_image
 
 # Affine align a list of subjects in parallel 
-def alignment_parallel(subject_list, reference_brain, display=False, display_3d=False):
+def alignment_parallel(subject_list: list[Subject], reference_brain: np.ndarray, display: bool = False, display_3d: bool = False) -> None:
         
     # Use ProcessPoolExecutor to run affine alignment in parallel
     with concurrent.futures.ProcessPoolExecutor() as executor:
@@ -89,7 +110,7 @@ def alignment_parallel(subject_list, reference_brain, display=False, display_3d=
 
 # Uses affine_alignment.mat of a subject to align another file (for example the aseg file)
 # Must have already been aligned using 
-def aux_alignment(subject, file, is_aparc=False):
+def aux_alignment(subject: Subject, file: str, is_aparc: bool = False):
     
     # Open both images
     fixed_image = ants.from_numpy(np.asarray(nibabel.load(subject.brain_aligned).get_fdata()))
@@ -130,7 +151,7 @@ def aux_alignment(subject, file, is_aparc=False):
     return transformed_image
 
 # Align aparc files in parallel
-def aux_alignment_parallel(subject_list, moving_image_attribute, is_aparc=False, display=False):
+def aux_alignment_parallel(subject_list: list[Subject], moving_image_attribute, is_aparc=False, display=False):
     
     # Use ProcessPoolExecutor to run affine alignment in parallel
     with concurrent.futures.ProcessPoolExecutor() as executor:

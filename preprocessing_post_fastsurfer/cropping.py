@@ -9,6 +9,17 @@ from .vis import *
 
 # Not for use with images of range greater than 0-255 as saves as uint8
 def crop(subject, relative_path, max_bbox, is_full_brain):
+    """
+
+    Args:
+        subject (_type_): _description_
+        relative_path (_type_): _description_
+        max_bbox (_type_): _description_
+        is_full_brain (bool): _description_
+
+    Returns:
+        _type_: _description_
+    """
     
     image = nibabel.load(os.path.join(subject.path, relative_path))
     

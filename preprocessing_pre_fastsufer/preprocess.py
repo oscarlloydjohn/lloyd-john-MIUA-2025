@@ -47,7 +47,7 @@ Run the script inside a container compatible with fastsurfer, with the required 
 
     python3 preprocess.py --data_path /path/to/directory --license_path /path/to/license --threads N [--tesla3] [mgz_to_nii] [--keep_orig]
 
-
+:author: Oscar Lloyd-John
 """
 
 
