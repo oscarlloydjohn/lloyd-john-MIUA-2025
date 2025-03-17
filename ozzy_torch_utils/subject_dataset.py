@@ -11,6 +11,7 @@ import os
 import numpy as np
 import random
 from tqdm import tqdm
+from concurrent.futures import ProcessPoolExecutor
 
 # Custom modules
 from preprocessing_post_fastsurfer.subject import *
@@ -78,7 +79,7 @@ class SubjectDataset(Dataset):
 
                 # Keep only the data we are interested in. Note that this is inefficient as we should probably just not load the data we dont' want in the first place
                 subject.mem_dict = {data_string: subject_dict[data_string], labels_string: subject_dict[labels_string]}
-
+            
     def __len__(self):
         
         return len(self.subject_list)
@@ -94,7 +95,6 @@ class SubjectDataset(Dataset):
         else:
             
             return self.load_subject(index)
-            
         
     def load_subject(self, index):
         
@@ -133,6 +133,8 @@ class SubjectDataset(Dataset):
         # Normalise volumes, scale factor to avoid underflow
         volume_col_normalised = volume_col / volume_col.sum() * 1000
         
+        struct_name_col = subject.aseg_stats['StructName']
+        
         
         """SUBJECT INFO - NB NOT COMPLETE WITH SCORES"""
     
@@ -169,6 +171,7 @@ class SubjectDataset(Dataset):
             'hcampus_pointcloud': hcampus_pointcloud,
             'hcampus_pointcloud_aligned': hcampus_pointcloud_aligned,
             'volumes': np.array(volume_col_normalised),
+            'struct_names': np.array(struct_name_col),
             'research_group': research_group,
         }
         

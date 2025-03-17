@@ -160,4 +160,4 @@ def train_nn(model_parameters: ModelParameters, train_dataloader: Dataset, test_
 
     print("Training complete")
     
-    return metrics
+    return metrics, model_parameters.model

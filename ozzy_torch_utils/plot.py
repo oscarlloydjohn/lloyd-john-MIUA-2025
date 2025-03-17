@@ -13,7 +13,7 @@ from .subject_dataset import *
 
 # NB this function has to remain in the notebook for it to work properly
 # Plot training loss, validation loss, and accuracy on separate subplots, along with displaying hyperparameters
-def plot(metrics: dict, model_parameters: object, save_params: bool = False, save_metrics: bool = False, save_png: bool = False, ylim: tuple = None) -> None:
+def plot(metrics: dict, model_parameters: object, save_params: bool = False, save_model: bool = False, save_metrics: bool = False, save_png: bool = False, ylim: tuple = None) -> None:
 
     fig, (ax1, ax2, ax3) = plt.subplots(3, 1, figsize=(10, 15), sharex=False)
 
@@ -144,6 +144,9 @@ def plot(metrics: dict, model_parameters: object, save_params: bool = False, sav
     
     # Save params not tested yet
     if save_params:
+        
+        # run_prediction will not be available on load, it must be redefined
+        model_parameters.run_prediction = None
         
         # Save params as pickle
         with open(f'{directory}/{name}_params.pkl', 'wb') as file:
