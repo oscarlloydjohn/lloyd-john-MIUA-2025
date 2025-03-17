@@ -8,12 +8,12 @@ import matplotlib.pyplot as plt
 import os
 
 # Load an image into nibabel
-def load_image(data_path: os.PathLike[str], filename: str) -> nibabel.Nifti1Image:
+def load_image(data_path: os.PathLike[str], filename: str):
     
     return nibabel.load(f"{data_path}/{filename}")
 
 # Display the middle slice of a nibabel image
-def display_image(image):
+def display_image(image) -> None:
 
     # Get image data array from image object
     image_array = np.asarray(image.dataobj)
@@ -23,7 +23,7 @@ def display_image(image):
     return 
 
 # Display the middle slice of a 3d array
-def display_array(array):
+def display_array(array: np.ndarray) -> None:
     
     # Get middle slice
     slice = array[array.shape[0] // 2, :, :]

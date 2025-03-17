@@ -16,6 +16,7 @@ Usage
 
     python3 delete_files_containing.py --data_path /path/to/directory --string scaled
 
+:author: Oscar Lloyd-John
 """
 
 def delete_files_containing(data_path: os.PathLike[str], string: str) -> None:

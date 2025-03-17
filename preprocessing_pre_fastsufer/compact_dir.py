@@ -17,6 +17,7 @@ Run the script with the required arguments to delete files matching a specific f
 
     python3 compact_dir.py --data_path /path/to/directory
 
+:author: Oscar Lloyd-John
 """
 
 # Recursively search all subdirectories for files and put them in data_path. Delete empty directories

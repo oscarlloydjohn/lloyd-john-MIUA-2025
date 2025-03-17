@@ -21,6 +21,7 @@ Run the script with the required arguments to delete files matching a specific f
 
     python3 isolate_adni_screening.py --data_path /path/to/directory --dest_path /path/to/destination
 
+:author: Oscar Lloyd-John
 """
 
 if __name__ == "__main__":

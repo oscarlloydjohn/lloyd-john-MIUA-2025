@@ -16,6 +16,7 @@ Usage
 
     python3 delete_files_called.py --data_path /path/to/directory --filename file1.txt
 
+:author: Oscar Lloyd-John
 """
 
 
