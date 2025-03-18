@@ -133,7 +133,7 @@ def plot(metrics: dict, model_parameters: object, save_params: bool = False, sav
     # Calculate time for filename
     current_time = datetime.now().strftime("%d-%m-%Y_%H-%M-%S")
     
-    print(f"Save time: {current_time}")
+    print(f"Finish time: {current_time}")
     
     if save_params or save_metrics or save_png:
         

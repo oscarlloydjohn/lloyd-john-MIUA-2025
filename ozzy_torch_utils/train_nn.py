@@ -153,10 +153,7 @@ def train_nn(model_parameters: ModelParameters, train_dataloader: Dataset, test_
         
     metrics['train_time'] = end_time - start_time
 
-    # THis is wrong, len dataloader is the number of batches
-    # metrics['num_training_images'] = len(train_dataloader)
-
-    # metrics['num_training_images'] = len(train_dataloader.dataset)
+    metrics['num_training_images'] = len(train_dataloader.dataset)
 
     print("Training complete")
     
