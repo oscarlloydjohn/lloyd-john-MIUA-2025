@@ -31,3 +31,4 @@ class ModelParameters:
         self.criterion = None
         self.optimiser = None
         self.run_prediction = None
+        
