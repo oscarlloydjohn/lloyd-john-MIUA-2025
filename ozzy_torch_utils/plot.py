@@ -2,18 +2,52 @@ from datetime import datetime
 import matplotlib.pyplot as plt
 from matplotlib.ticker import MaxNLocator
 from datetime import datetime
-import pickle
+import dill as pickle
 
 # Custom modules
 from preprocessing_post_fastsurfer.subject import *
 from preprocessing_post_fastsurfer.vis import *
 from .split_dataset import *
 from .subject_dataset import *
+from .model_parameters import *
 
+
+"""
+
+Plot
+===========
+
+This function provides a way to plot and store the results of a model training. 
+
+:author: Oscar Lloyd-John
+
+"""
 
 # NB this function has to remain in the notebook for it to work properly
 # Plot training loss, validation loss, and accuracy on separate subplots, along with displaying hyperparameters
-def plot(metrics: dict, model_parameters: object, save_params: bool = False, save_model: bool = False, save_metrics: bool = False, save_png: bool = False, ylim: tuple = None) -> None:
+def plot(metrics: dict, model_parameters: ModelParameters, save_params: bool = False, save_metrics: bool = False, save_png: bool = False, ylim: tuple = None) -> None:
+
+    """
+    
+    This function plots the training and validation loss, accuracy, F1 score, precision, recall, and ROC AUC over epochs. It also displays the hyperparameters used for training as given by the ModelParameters object. The function can save the hyperparameters (including the trained model itself), metrics, and plot as a pickle file and png respectively. These can then be recalled and used again in this function.
+
+    Note that dill is used such that the run_prediction function can be serialised. Make sure to use dill when unserialising the pickle. Can be easily done using 'import dill as pickle'
+
+    :param metrics: The metrics dictionary returned by the train_nn function
+    :type metrics: dict
+    :param model_parameters: The model parameters used for training
+    :type model_parameters: ModelParameters
+    :param save_params: Whether to save the model parameters (including the model itself) as a pickle file
+    :type save_params: bool
+    :param save_metrics: Whether to save the metrics dict as a pickle file
+    :type save_metrics: bool
+    :param save_png: Whether to save the plot as a png file
+    :type save_png: bool
+    :param ylim: The y-axis limits for the training and validation loss plot
+    :type ylim: tuple
+    :return: None
+
+    """
 
     fig, (ax1, ax2, ax3) = plt.subplots(3, 1, figsize=(10, 15), sharex=False)
 
@@ -40,6 +74,7 @@ def plot(metrics: dict, model_parameters: object, save_params: bool = False, sav
     
     print(len(metrics['roc_aucs']))
     
+    # ROCs were sometimes nan when model performed poorly i.e always predicted one class
     if True not in np.isnan(metrics['roc_aucs']):
         
         ax2.plot(metrics['roc_aucs'], label='ROC AUCs', color='purple')
@@ -64,7 +99,6 @@ def plot(metrics: dict, model_parameters: object, save_params: bool = False, sav
 
     ax3.xaxis.set_major_locator(MaxNLocator(integer=False))
 
-    
     info = []
     
     # Metrics
@@ -80,7 +114,7 @@ def plot(metrics: dict, model_parameters: object, save_params: bool = False, sav
 
     info.append(train_time_str)
     
-    # Num images
+    # Num images sometimes failed when plotting from pickle
     try:
         
         info.append(f"Number of training images: {metrics['num_training_images']:.0f}")

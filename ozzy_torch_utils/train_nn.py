@@ -2,6 +2,7 @@
 import torch
 import torch
 from torcheval.metrics import *
+from torch.utils.data import DataLoader
 
 # Other
 from tqdm import tqdm
@@ -15,8 +16,37 @@ from .split_dataset import *
 from .subject_dataset import *
 from .model_parameters import *
 
-def train_nn(model_parameters: ModelParameters, train_dataloader: Dataset, test_dataloader: Dataset, device) -> dict:
+"""
+
+Train neural network
+===========
+
+This module provides a function that trains a neural network classifier using the given model parameters (ModelParameters) and dataset. The function returns a dictionary of metrics for each epoch and the trained model. It is desiged to be used with the ModelParameters class, and the plot function also contained in this package. The plot function can be used to visualise the metrics returned by this function, and also to save them.
+
+:author: Oscar Lloyd-John
+
+"""
+
+def train_nn(model_parameters: ModelParameters, train_dataloader: DataLoader, test_dataloader: DataLoader, device: torch.device) -> tuple[dict, torch.nn.Module]:
     
+    """
+
+    Trains a neural network using the given model parameters and dataset. The function returns a dictionary of metrics for each epoch and the trained model.
+
+    :param model_parameters: The model parameters to be used for training
+    :type model_parameters: ModelParameters
+    :param train_dataloader: The dataloader for the training dataset
+    :type train_dataloader: DataLoader
+    :param test_dataloader: The dataloader for the test dataset
+    :type test_dataloader: DataLoader
+    :param device: The device to train the model on
+    :type device: torch.device
+    :return: A dictionary of metrics stored as lists where a list contains all metrics of one type over an epoch and the trained model
+    :rtype: tuple[dict, torch.nn.Module]
+
+    """
+
+    # Check that all ModelParameters attributes were set
     for attr, value in vars(model_parameters).items():
         
         if value is None:
@@ -25,6 +55,7 @@ def train_nn(model_parameters: ModelParameters, train_dataloader: Dataset, test_
             
             return
     
+    # Each list in the dictionary will contain the metrics for each epoch
     metrics = {
         "training_losses" : [],
         "validation_losses": [],
@@ -39,10 +70,12 @@ def train_nn(model_parameters: ModelParameters, train_dataloader: Dataset, test_
         "num_training_images": None
     }
 
+    # Device setup
     print(f"Using {device} device")
 
     model_parameters.model.to(device)
 
+    # Monitor training time
     start_time = datetime.now()
 
     for epoch in range(model_parameters.num_epochs):
@@ -64,7 +97,7 @@ def train_nn(model_parameters: ModelParameters, train_dataloader: Dataset, test_
             
             inputs, labels = inputs.to(device), labels.to(device)
             
-            # Function as defined for given model
+            # Run_prediction is a function that handles running the model and calculating the loss and predicted classes
             loss, pred_probability, pred_labels = model_parameters.run_prediction(inputs, labels)
 
             # Backpropagation
@@ -105,7 +138,7 @@ def train_nn(model_parameters: ModelParameters, train_dataloader: Dataset, test_
                     
                 running_validation_loss += loss.item() * inputs.size(0)
                     
-                # Accumulate results for metrics 
+                # Accumulate results for metrics
                 epoch_pred_probs = torch.cat((epoch_pred_probs, pred_probability))
                 epoch_pred_labels = torch.cat((epoch_pred_labels, pred_labels))
                 epoch_labels = torch.cat((epoch_labels, labels))
@@ -113,7 +146,6 @@ def train_nn(model_parameters: ModelParameters, train_dataloader: Dataset, test_
         end_time = datetime.now()
         
         # Update and compute metrics for each epoch
-         
         for metric in [conf_matrix, accuracy, f1, precision, recall]:
             
             metric.update(epoch_pred_labels, epoch_labels) 
@@ -142,7 +174,7 @@ def train_nn(model_parameters: ModelParameters, train_dataloader: Dataset, test_
         print(f"Recall:          {metrics['recalls'][-1]:.4f}")
         print(f"ROC AUC:         {metrics['roc_aucs'][-1]:.4f}")
             
-        # Break before nightly restart
+        # Break before nightly restart on feng-linux machines
         current_time = datetime.now()
         
         if current_time.hour == 23 and current_time.minute >= 30:

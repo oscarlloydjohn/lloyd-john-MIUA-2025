@@ -5,8 +5,39 @@ from torch.utils.data import DataLoader
 from .split_dataset import *
 from .subject_dataset import *
 
-def init_dataloaders(model_parameters, num_workers = 4, load_in_memory = False, verify_data=False):
+"""
+
+Initialise dataloaders
+===========
+
+Initialises train and test datasets for use in train_nn. These are created from the SubjectDataset class.
+
+:author: Oscar Lloyd-John
+
+"""
+
+def init_dataloaders(model_parameters, num_workers = 4, load_in_memory = False, verify_data=False) -> tuple[DataLoader, DataLoader]:
     
+    """
+    
+    Given the parameters from the ModelParameters object, initalises a pair of dataloaders from the SubjectDataset dataset. The function also checks the dataset for any issues such as ID leakage between the train and test sets, and the distribution of labels.
+
+    All model_parameters parameters must be set beforehand, except for criterion which is set after dataloader init as it is dependent on the distribution of labels in the loaders (for the weights).
+
+    Dataloader can be checked for common issues (often causing overfitting) in MRI classification such as subject ID leakage between train and test sets. Distribution of labels is also checked.
+
+    :param model_parameters: The model parameters to be used for training, including the model and criterion objects. See model_parameters.py. 
+    :type model_parameters: ModelParameters
+    :param num_workers: The number of workers (threads) to be used to create the dataloader
+    :type num_workers: int
+    :param load_in_memory: Whether to load the entire dataset into memory. This can be useful for small datasets, but not for large datasets. It is slow to load however speeds up training especially if training a large number of models that read data from the network.
+    :type load_in_memory: bool
+    :param verify_data: Print out the dataset size, unique labels, and unique ids
+    :type verify_data: bool
+    :return: The training and testing dataloaders
+    :rtype: tuple[DataLoader, DataLoader]
+
+    """
     for attr, value in vars(model_parameters).items():
         
         # Criterion is the only parameter that needs to be set after dataloader init
@@ -61,6 +92,15 @@ def init_dataloaders(model_parameters, num_workers = 4, load_in_memory = False, 
     return train_dataloader, test_dataloader
 
 def get_weights(train_dataloader):
+
+    """
+    Get the class weights from the dataloader to be passed to a criterion object. Used as ADNI has unbalanced datasets.
+
+    :param train_dataloader: The training dataloader
+    :type train_dataloader: DataLoader
+    :return: A tensor of the class weights
+    :rtype: torch.Tensor
+    """
     
     labels = torch.empty(0, dtype=torch.int32)
     
