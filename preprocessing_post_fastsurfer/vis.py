@@ -11,7 +11,7 @@ import os
 Visualisation
 ===========
 
-This module provides for visualising neuroimaging data within python. The functions are designed to be used with the Subject class. Has options for displaying 2D and 3D images, as well as point clouds and meshes.
+This module provides functions for visualising neuroimaging data within python. The functions are designed to be used with the Subject class. Has options for displaying 2D and 3D images, as well as point clouds and meshes.
 
 :author: Oscar Lloyd-John
 """
