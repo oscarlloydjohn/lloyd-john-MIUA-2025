@@ -19,7 +19,6 @@ Usage
 :author: Oscar Lloyd-John
 """
 
-# Recursively search all subdirectories for files and put them in data_path. Delete empty directories
 def create_holdout(source, dest, num) -> None:
 
     """
