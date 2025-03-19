@@ -83,15 +83,12 @@ def vis_attributions(attributions, subject, cloud, pred_research_group):
     # Cmap for pyvista
     cmap = plt.get_cmap('seismic')
     colours = cmap(norm_attributions)
-    colours_rgb = (colours[:, :3] * 255).astype(np.uint8)
 
     pv_cloud = pv.PolyData(cloud)
 
-    pv_cloud['colors'] = colours_rgb
-
     plotter = pv.Plotter()
 
-    plotter.add_points(pv_cloud, scalars='colors', rgb=True)
+    plotter.add_points(pv_cloud, scalars=colours, rgb=True)
 
     plotter.set_background("black")
 
