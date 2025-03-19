@@ -68,7 +68,7 @@ def pointnet_ig(model, cloud, device):
     return attributions, pred_research_group
 
 
-def vis_attributions(attributions, subject, cloud, pred_research_group):
+'''def vis_attributions(attributions, subject, cloud, pred_research_group):
     
     # Sum x, y and z values for an overall attribution for that point
     xyz_sum = np.sum(attributions, axis=1)
@@ -89,6 +89,62 @@ def vis_attributions(attributions, subject, cloud, pred_research_group):
     plotter = pv.Plotter()
 
     plotter.add_points(pv_cloud, scalars=colours, rgb=True)
+
+    plotter.set_background("black")
+
+    # THIS IS NOT FOR USE, IT IS RUNNING PREDICTIONS ON TRAINING DATA!!
+    plotter.add_text("This is just a test running on training data!", color='white')
+    plotter.add_text(f"True class: {str(subject.subject_metadata['Group'].iloc[0])} \n Predicted class: {pred_research_group} ", color='white', position='upper_right')
+
+    plotter.show()
+    
+    return'''
+
+def vis_attributions(attributions, subject, cloud, pred_research_group):
+    
+    # Sum x, y and z values for an overall attribution for that point
+    xyz_sum = np.sum(attributions, axis=1)
+
+    def power_transform(data, power):
+
+        return np.sign(data) * np.power(np.abs(data), power)
+
+    plt.plot(xyz_sum)
+
+    plt.show()
+
+    xyz_sum = power_transform(xyz_sum, 0.1)
+
+    plt.plot(xyz_sum)
+
+    plt.show()
+
+    # Normalise such that 0 attribution maps to 0.5 and the relative sizes of positive and negative attributions is preserved
+    def norm(data):
+
+        min = np.min(data)
+        max = np.max(data)
+
+        max_abs_val = np.max((np.abs(min), np.abs(max)))
+
+        return np.array([0.5 + (value / (2 * max_abs_val)) for value in data])
+
+
+    norm_xyz_sum = norm(xyz_sum)
+
+    plt.plot(norm_xyz_sum)
+
+    plt.show()
+
+    # Have to use custom cmap to force the 0 attributions to be white
+    colours = [(0, 'blue'), (0.5, 'white'), (1, 'red')]
+    custom_cmap = LinearSegmentedColormap.from_list('custom_cmap', colours)
+
+    pv_cloud = pv.PolyData(cloud)
+
+    plotter = pv.Plotter()
+
+    plotter.add_points(pv_cloud, scalars=norm_xyz_sum, cmap=custom_cmap, clim= [0,1])
 
     plotter.set_background("black")
 
