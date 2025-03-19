@@ -204,7 +204,7 @@ def init_subject(subject_path: os.PathLike[str], cohort_df: pd.DataFrame) -> Sub
 def find_subjects_parallel(data_path: os.PathLike[str]) -> list[Subject]:
 
     """
-    Loads the csv file containing data such as image ID, subject ID and disease labels. Searches the specified directory for subdirectories that could contain subject images. Tries to initialise a Subject object by calling init_subject on each subdirectory. This function is the same as find_subjects except it works in parallel using a process pool executor.
+    Loads the csv file containing data such as image ID, subject ID and disease labels. Note that ADNI gives multiple CSV files with different variable names for some reason! The CSV file that is expected is the one that can be downloaded from the Advanced Image Search results, rather than the csv generated after adding it to a collection. This is because the latter does not contain information such as test scores. Searches the specified directory for subdirectories that could contain subject images. Tries to initialise a Subject object by calling init_subject on each subdirectory. This function is the same as find_subjects except it works in parallel using a process pool executor.
 
     :param data_path: The path to the dataset directory
     :type data_path: os.PathLike[str]
@@ -243,7 +243,7 @@ def find_subjects_parallel(data_path: os.PathLike[str]) -> list[Subject]:
 def find_subjects(data_path: os.PathLike[str]) -> list[Subject]:
 
     """
-    Loads the csv file containing data such as image ID, subject ID and disease labels. Searches the specified directory for subdirectories that could contain subject images. Tries to initialise a Subject object by calling init_subject on each subdirectory.
+    Loads the csv file containing data such as image ID, subject ID and disease labels. Note that ADNI gives multiple CSV files with different variable names for some reason! The CSV file that is expected is the one that can be downloaded from the Advanced Image Search results, rather than the csv generated after adding it to a collection. This is because the latter does not contain information such as test scores. Searches the specified directory for subdirectories that could contain subject images. Tries to initialise a Subject object by calling init_subject on each subdirectory.
 
     :param data_path: The path to the dataset directory
     :type data_path: os.PathLike[str]

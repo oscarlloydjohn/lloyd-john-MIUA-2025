@@ -205,6 +205,8 @@ class SubjectDataset(Dataset):
         # Info from subject dataframe
         subject_metadata = subject.subject_metadata
         
+        
+        
         # Convert research group disease label str to number for pytorch
         if len(self.selected_labels) == 3:
             

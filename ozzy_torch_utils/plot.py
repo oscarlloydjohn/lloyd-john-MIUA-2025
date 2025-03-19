@@ -2,7 +2,7 @@ from datetime import datetime
 import matplotlib.pyplot as plt
 from matplotlib.ticker import MaxNLocator
 from datetime import datetime
-import dill as pickle
+import pickle
 
 # Custom modules
 from preprocessing_post_fastsurfer.subject import *
@@ -30,8 +30,6 @@ def plot(metrics: dict, model_parameters: ModelParameters, save_params: bool = F
     """
     
     This function plots the training and validation loss, accuracy, F1 score, precision, recall, and ROC AUC over epochs. It also displays the hyperparameters used for training as given by the ModelParameters object. The function can save the hyperparameters (including the trained model itself), metrics, and plot as a pickle file and png respectively. These can then be recalled and used again in this function.
-
-    Note that dill is used such that the run_prediction function can be serialised. Make sure to use dill when unserialising the pickle. Can be easily done using 'import dill as pickle'
 
     :param metrics: The metrics dictionary returned by the train_nn function
     :type metrics: dict
