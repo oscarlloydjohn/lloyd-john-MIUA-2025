@@ -71,6 +71,10 @@ class SubjectDataset(Dataset):
         self.load_in_memory = load_in_memory
 
         self.data_string = data_string
+
+        self.selected_labels = selected_labels
+        
+        self.num_classes = len(selected_labels)
         
         # Check format of selected labels
         if len(selected_labels) < 2 or len(selected_labels) > 3:
@@ -85,9 +89,6 @@ class SubjectDataset(Dataset):
             
             return
         
-        self.selected_labels = selected_labels
-        
-        self.num_classes = len(selected_labels)
         
         initial_subject_list = find_subjects_parallel(data_path)
         
