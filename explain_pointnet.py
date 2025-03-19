@@ -12,6 +12,7 @@ from captum.attr import *
 import pyvista as pv
 from matplotlib.colors import Normalize
 from random import sample
+from matplotlib.colors import LinearSegmentedColormap
 
 # Custom modules
 from preprocessing_post_fastsurfer.subject import *
@@ -109,15 +110,17 @@ def vis_attributions(attributions, subject, cloud, pred_research_group):
 
         return np.sign(data) * np.power(np.abs(data), power)
 
-    plt.plot(xyz_sum)
+    '''plt.plot(xyz_sum)
 
     plt.show()
+    '''
 
-    xyz_sum = power_transform(xyz_sum, 0.1)
+    xyz_sum = power_transform(xyz_sum, 0.25)
 
-    plt.plot(xyz_sum)
+    '''plt.plot(xyz_sum)
 
     plt.show()
+    '''
 
     # Normalise such that 0 attribution maps to 0.5 and the relative sizes of positive and negative attributions is preserved
     def norm(data):
@@ -132,9 +135,10 @@ def vis_attributions(attributions, subject, cloud, pred_research_group):
 
     norm_xyz_sum = norm(xyz_sum)
 
-    plt.plot(norm_xyz_sum)
+    '''plt.plot(norm_xyz_sum)
 
     plt.show()
+    '''
 
     # Have to use custom cmap to force the 0 attributions to be white
     colours = [(0, 'blue'), (0.5, 'white'), (1, 'red')]
