@@ -94,7 +94,7 @@ def pointnet_ig(model, cloud, device):
 
     # THIS IS NOT FOR USE, IT IS RUNNING PREDICTIONS ON TRAINING DATA!!
     plotter.add_text("This is just a test running on training data!", color='white')
-    plotter.add_text(f"True class: {str(subject.subject_metadata['Group'].iloc[0])} \n Predicted class: {pred_research_group} ", color='white', position='upper_right')
+    plotter.add_text(f"True class: {str(subject.subject_metadata['Research Group'].iloc[0])} \n Predicted class: {pred_research_group} ", color='white', position='upper_right')
 
     plotter.show()
     
@@ -150,7 +150,7 @@ def vis_attributions(attributions, subject, cloud, pred_research_group):
 
     # THIS IS NOT FOR USE, IT IS RUNNING PREDICTIONS ON TRAINING DATA!!
     plotter.add_text("This is just a test running on training data!", color='white')
-    plotter.add_text(f"True class: {str(subject.subject_metadata['Group'].iloc[0])} \n Predicted class: {pred_research_group} ", color='white', position='upper_right')
+    plotter.add_text(f"True class: {str(subject.subject_metadata['Research Group'].iloc[0])} \n Predicted class: {pred_research_group} ", color='white', position='upper_right')
 
     plotter.show()
     

@@ -97,7 +97,7 @@ class SubjectDataset(Dataset):
             
         for subject in initial_subject_list:
             
-            label = subject.subject_metadata['Group'].iloc[0]
+            label = subject.subject_metadata['Research Group'].iloc[0]
             
             if label in selected_labels:
                 
@@ -203,9 +203,20 @@ class SubjectDataset(Dataset):
         """SUBJECT INFO - NB NOT COMPLETE WITH SCORES"""
     
         # Info from subject dataframe
+        # NB missing scores are already nan when read in
         subject_metadata = subject.subject_metadata
         
-        
+        mmse = subject_metadata['MMSE Total Score'].iloc[0]
+
+        gdscale = subject_metadata['GDSCALE Total Score'].iloc[0]
+
+        faq = subject_metadata['FAQ Total Score'].iloc[0]
+
+        npiq = subject_metadata['NPI-Q Total Score'].iloc[0]
+
+        scores = [mmse, gdscale, faq, npiq]
+
+        score_names = ['MMSE Total Score', 'GDSCALE Total Score', 'FAQ Total Score', 'NPI-Q Total Score']
         
         # Convert research group disease label str to number for pytorch
         if len(self.selected_labels) == 3:
@@ -226,7 +237,7 @@ class SubjectDataset(Dataset):
 
         
         # Get the value of the mapping, -1 if not found
-        research_group = mapping.get(subject_metadata['Group'].iloc[0], -1)
+        research_group = mapping.get(subject_metadata['Research Group'].iloc[0], -1)
 
         # Return dict with data, this is filtered by collate_fn
         return {
@@ -242,6 +253,8 @@ class SubjectDataset(Dataset):
             'lhcampus_pointcloud_aligned': lhcampus_pointcloud_aligned,
             'volumes': np.array(volume_col_normalised),
             'struct_names': np.array(struct_name_col),
+            'scores' : scores,
+            'score_names': score_names,
             'research_group': research_group,
         }
         

@@ -66,7 +66,7 @@ def init_dataloaders(model_parameters, num_workers = 4, load_in_memory = False, 
 
         labels = [dataset[index]['research_group'] for index in range(len(dataset.subject_list))]
 
-        ids = [dataset.subject_list[index].subject_metadata['Subject'] for index in range(len(dataset.subject_list))]
+        ids = [dataset.subject_list[index].subject_metadata['Subject ID'] for index in range(len(dataset.subject_list))]
 
         print(f"Unique labels: {np.unique(labels, return_counts=True)}\n")
 
@@ -83,9 +83,9 @@ def init_dataloaders(model_parameters, num_workers = 4, load_in_memory = False, 
     # Check the intersection of ids between train and test sets
     if verify_data:
         
-        train_ids = [dataset.subject_list[index].subject_metadata['Subject'].iloc[0] for index in train_data.indices]
+        train_ids = [dataset.subject_list[index].subject_metadata['Subject ID'].iloc[0] for index in train_data.indices]
 
-        test_ids = [dataset.subject_list[index].subject_metadata['Subject'].iloc[0] for index in test_data.indices]
+        test_ids = [dataset.subject_list[index].subject_metadata['Subject ID'].iloc[0] for index in test_data.indices]
 
         print(f"Id intersection between train and test: {np.intersect1d(np.unique(train_ids), np.unique(test_ids))}\n")
         

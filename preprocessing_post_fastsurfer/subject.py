@@ -11,6 +11,8 @@ Subject
 
 This module provides a class and some initialisation functions designed to be used with a dataset directory that has been created using the preprocess_pre_fastsurfer module. The Subject class is a representation of a single subject in the dataset, and contains paths to the processed files for that subject. The init_subject and init_subject_parallel functions are used to create Subject objects from the dataset directory.
 
+When choosing the CSV file, make sure to use the csv returned from the ADNI Advanced Image Search page rather than the Image Collections page as the latter has different variable names and less information! 
+
 :author: Oscar Lloyd-John
 
 """
@@ -130,6 +132,8 @@ def get_cohort_df(data_path: os.PathLike[str]) -> pd.DataFrame:
     
     csv_list = glob.glob(os.path.join(data_path, "*.csv"))
 
+    print(csv_list)
+
     # Read all CSVs into a list and concatenate
     cohort_df = pd.concat([pd.read_csv(csv) for csv in csv_list], ignore_index=True)
     
@@ -137,7 +141,7 @@ def get_cohort_df(data_path: os.PathLike[str]) -> pd.DataFrame:
     cohort_df = cohort_df.drop_duplicates(keep='first')
     
     # Find duplicate image IDs
-    duplicates = cohort_df[cohort_df.duplicated(subset='Image Data ID', keep=False)]
+    duplicates = cohort_df[cohort_df.duplicated(subset='Image ID', keep=False)]
     
     if not duplicates.empty:
         
@@ -183,11 +187,11 @@ def init_subject(subject_path: os.PathLike[str], cohort_df: pd.DataFrame) -> Sub
         if os.path.isfile(orig_file) and os.path.isfile(mask_file):
             
             # Slice the string after the last underscore to get the image ID
-            image_id = subject_path[subject_path.rfind('_') + 1:]
+            image_id = subject_path[subject_path.rfind('_') + 2:]
             
             # Get the subject's row using image ID
-            subject_metadata = cohort_df.loc[cohort_df['Image Data ID'] == image_id].copy()
-            
+            subject_metadata = cohort_df.loc[cohort_df['Image ID'] == int(image_id)].copy()
+
             if subject_metadata.empty:
                 
                 print("Error: Image ID not found")
