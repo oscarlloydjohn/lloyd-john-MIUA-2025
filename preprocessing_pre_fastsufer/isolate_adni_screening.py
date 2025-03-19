@@ -66,7 +66,7 @@ if __name__ == "__main__":
         
         item_path = os.path.join(data_path, item)
         
-        image_id = item_path[item_path.rfind('_') + 1 + 1:item_path.rfind('.')]
+        image_id = item_path[item_path.rfind('_') + 2 :item_path.rfind('.')]
         
         if image_id in earliest_ids:
             

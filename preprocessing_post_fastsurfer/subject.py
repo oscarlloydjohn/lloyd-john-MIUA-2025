@@ -132,7 +132,7 @@ def get_cohort_df(data_path: os.PathLike[str]) -> pd.DataFrame:
     
     csv_list = glob.glob(os.path.join(data_path, "*.csv"))
 
-    print(csv_list)
+    print(f"Csv files: {csv_list}")
 
     # Read all CSVs into a list and concatenate
     cohort_df = pd.concat([pd.read_csv(csv) for csv in csv_list], ignore_index=True)
