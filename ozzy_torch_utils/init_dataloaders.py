@@ -76,9 +76,9 @@ def init_dataloaders(model_parameters, num_workers = 4, load_in_memory = False, 
     train_data, test_data = split_dataset(dataset, test_size=model_parameters.test_size)
 
     # drop_last to prevent last batch tensors from messing up the metrics
-    train_dataloader = DataLoader(train_data, batch_size=model_parameters.batch_size, shuffle=True, num_workers = num_workers, drop_last=model_parameters.drop_last, collate_fn=collate_fn([model_parameters.data_string, model_parameters.labels_string]))
+    train_dataloader = DataLoader(train_data, batch_size=model_parameters.batch_size, shuffle=True, num_workers = num_workers, drop_last=model_parameters.drop_last)
 
-    test_dataloader = DataLoader(test_data, batch_size=model_parameters.batch_size, shuffle=False, num_workers = num_workers, drop_last=model_parameters.drop_last, collate_fn=collate_fn([model_parameters.data_string, model_parameters.labels_string]))
+    test_dataloader = DataLoader(test_data, batch_size=model_parameters.batch_size, shuffle=False, num_workers = num_workers, drop_last=model_parameters.drop_last)
     
     # Check the intersection of ids between train and test sets
     if verify_data:
