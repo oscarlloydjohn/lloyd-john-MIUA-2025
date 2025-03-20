@@ -72,7 +72,7 @@ class SubjectDataset(Dataset):
 
         if data_string is None:
 
-            print("Error, data_string is not set. Pass a string or list \n")
+            print("Error, data_string is not set.\n")
 
             return
         
