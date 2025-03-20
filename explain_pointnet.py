@@ -25,6 +25,8 @@ from ozzy_torch_utils.model_parameters import *
 from ozzy_torch_utils.init_dataloaders import *
 
 def pointnet_ig(model, cloud, device):
+
+    model.to(device)
     
     model.eval()
 
@@ -101,7 +103,7 @@ def pointnet_ig(model, cloud, device):
     
     return'''
 
-def vis_attributions(attributions, subject, cloud, pred_research_group):
+def vis_attributions(attributions: np.ndarray, subject: Subject, cloud: np.ndarray, pred_research_group: str, plot_attributions: bool = False) -> None:
     
     # Sum x, y and z values for an overall attribution for that point
     xyz_sum = np.sum(attributions, axis=1)

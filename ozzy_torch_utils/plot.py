@@ -174,17 +174,11 @@ def plot(metrics: dict, model_parameters: ModelParameters, save_params: bool = F
         directory = f'/uolstore/home/student_lnxhome01/sc22olj/Compsci/year3/individual-project-COMP3931/individual-project-sc22olj/runs/{name}'
         
         os.makedirs(directory, exist_ok=True)
-    
-    # Save params not tested yet
-    if save_params:
+
+    if save_png:
         
-        # run_prediction will not be available on load, it must be redefined
-        model_parameters.run_prediction = None
-        
-        # Save params as pickle
-        with open(f'{directory}/{name}_params.pkl', 'wb') as file:
-            
-            pickle.dump(model_parameters, file)  
+        # Save png as pickle
+        plt.savefig(f'{directory}/{name}.png', bbox_inches='tight')
 
     if save_metrics:
         
@@ -192,12 +186,21 @@ def plot(metrics: dict, model_parameters: ModelParameters, save_params: bool = F
         with open(f'{directory}/{name}_metrics.pkl', 'wb') as file:
             
             pickle.dump(metrics, file)
-        
-    if save_png:
-        
-        # Save png as pickle
-        plt.savefig(f'{directory}/{name}.png', bbox_inches='tight')
     
+    # Save params not tested yet
+    if save_params:
+        
+        # run_prediction will not be available on load, it must be redefined
+        model_parameters.run_prediction = None
+
+        # Move model to cpu so it can be loaded on devices without GPU
+        model_parameters.model.cpu()
+        
+        # Save params as pickle
+        with open(f'{directory}/{name}_params.pkl', 'wb') as file:
+            
+            pickle.dump(model_parameters, file)  
+
     plt.show()
-    
+
     return

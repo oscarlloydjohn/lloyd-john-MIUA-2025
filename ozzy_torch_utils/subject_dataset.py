@@ -43,7 +43,7 @@ class SubjectDataset(Dataset):
     :type selected_labels: list[str]
     :param load_in_memory: Whether to load the entire dataset into memory or read from disk per subject
     :type load_in_memory: bool
-    :param data_string: The key string for the data in the dictionary i.e which file are we interested in from the subjects directory
+    :param data_string: The key string for the data in the dictionary i.e which file are we interested in from the subjects directory.
     :type data_string: str
     :param labels_string: The key string for the labels in the dictionary. In this case will be research_group unless modified
 
@@ -60,7 +60,7 @@ class SubjectDataset(Dataset):
     :contact: sc22olj@leeds.ac.uk
     """
     
-    def __init__(self, data_path, selected_labels, load_in_memory=False, data_string=None, labels_string='research_group'):
+    def __init__(self, data_path: os.PathLike[str], selected_labels: str, load_in_memory: bool = False, data_string: list[str] = None, labels_string: str = 'research_group'):
 
         """
         Initialises the dataset
@@ -70,11 +70,15 @@ class SubjectDataset(Dataset):
         # Whether to load the entire dataset into memory
         self.load_in_memory = load_in_memory
 
-        self.data_string = data_string
+        if data_string is None:
 
-        self.selected_labels = selected_labels
+            print("Error, data_string is not set. Pass a string or list \n")
+
+            return
         
-        self.num_classes = len(selected_labels)
+        else:
+
+            self.data_string = data_string
         
         # Check format of selected labels
         if len(selected_labels) < 2 or len(selected_labels) > 3:
@@ -85,11 +89,15 @@ class SubjectDataset(Dataset):
         
         if selected_labels[0] != 'CN':
             
-            print("Error, ordering of labels incorrect")
+            print("Error, ordering of labels incorrect\n")
             
             return
         
+        self.selected_labels = selected_labels
         
+        self.num_classes = len(selected_labels)
+        
+        # List of all subjects before filtering
         initial_subject_list = find_subjects_parallel(data_path)
         
         final_subject_list = []
@@ -116,8 +124,6 @@ class SubjectDataset(Dataset):
         
         self.subject_list = final_subject_list
         
-        subject.mem_dict = None
-        
         # Load all the data into the dataset rather than only per subject when needed
         if load_in_memory:
             
@@ -125,13 +131,14 @@ class SubjectDataset(Dataset):
             
             for index, subject in tqdm(enumerate(self.subject_list), total=len(self.subject_list)):
                 
-                subject.mem_dict = self.load_subject(index)
+                # Create object attribute that stores the tensors themselves
+                subject.mem_dict = self.load_subject(subject)
             
     def __len__(self):
         
         return len(self.subject_list)
 
-    def __getitem__(self, index):
+    def __getitem__(self, index: int):
         
         if self.load_in_memory:
             
@@ -140,52 +147,53 @@ class SubjectDataset(Dataset):
             return subject.mem_dict
         
         else:
+
+            subject = self.subject_list[index]
             
-            return self.load_subject(index)
+            return self.load_subject(subject)
         
-    def load_subject(self, index: int) -> dict:
+    def load_subject(self, subject) -> dict:
         """
         Loads the data from the file paths and dataframes in the Subject object
 
-        :param index: The index of the subject in the subject list
-        :type index: int
+        :param subject: The subject object to have its data loaded in
+        :type index: Subject
         :return: A dictionary containing the data and labels for the subject
         :rtype: dict
         """
-        
-        subject = self.subject_list[index]
+    
         data = {}
 
         """IMAGES"""
         try:
-            if 'brain' in self.data_string:
+            if 'brain' == self.data_string:
                 data['brain'] = self.load_mri_to_tensor(subject.brain_aligned)
             
-            if 'brain_cropped' in self.data_string:
+            if 'brain_cropped' == self.data_string:
                 data['brain_cropped'] = self.load_mri_to_tensor(subject.brain_aligned_cropped)
             
-            if 'hcampus_vox' in self.data_string:
+            if 'hcampus_vox' == self.data_string:
                 data['hcampus_vox'] = self.load_mri_to_tensor(os.path.join(subject.path, 'Left-Hippocampus_Right-Hippocampus_cropped.nii'))
             
-            if 'hcampus_pointcloud' in self.data_string:
+            if 'hcampus_pointcloud' == self.data_string:
                 data['hcampus_pointcloud'] = torch.tensor(np.load(os.path.join(subject.path, 'Left-Hippocampus_Right-Hippocampus_cropped_mesh_downsampledcloud.npy')), dtype=torch.float32)
             
-            if 'lhcampus_vox' in self.data_string:
+            if 'lhcampus_vox' == self.data_string:
                 data['lhcampus_vox'] = self.load_mri_to_tensor(os.path.join(subject.path, 'Left-Hippocampus_cropped.nii'))
             
-            if 'lhcampus_pointcloud' in self.data_string:
+            if 'lhcampus_pointcloud' == self.data_string:
                 data['lhcampus_pointcloud'] = torch.tensor(np.load(os.path.join(subject.path, 'Left-Hippocampus_cropped_mesh_downsampledcloud.npy')), dtype=torch.float32)
             
-            if 'hcampus_vox_aligned' in self.data_string:
+            if 'hcampus_vox_aligned' == self.data_string:
                 data['hcampus_vox_aligned'] = self.load_mri_to_tensor(os.path.join(subject.path, 'Left-Hippocampus_Right-Hippocampus_aligned_cropped.nii'))
             
-            if 'hcampus_pointcloud_aligned' in self.data_string:
+            if 'hcampus_pointcloud_aligned' == self.data_string:
                 data['hcampus_pointcloud_aligned'] = torch.tensor(np.load(os.path.join(subject.path, 'Left-Hippocampus_Right-Hippocampus_aligned_cropped_mesh_downsampledcloud.npy')), dtype=torch.float32)
             
-            if 'lhcampus_vox_aligned' in self.data_string:
+            if 'lhcampus_vox_aligned' == self.data_string:
                 data['lhcampus_vox_aligned'] = self.load_mri_to_tensor(os.path.join(subject.path, 'Left-Hippocampus_aligned_cropped.nii'))
             
-            if 'lhcampus_pointcloud_aligned' in self.data_string:
+            if 'lhcampus_pointcloud_aligned' == self.data_string:
                 data['lhcampus_pointcloud_aligned'] = torch.tensor(np.load(os.path.join(subject.path, 'Left-Hippocampus_aligned_cropped_mesh_downsampledcloud.npy')), dtype=torch.float32)
         
         except Exception as e:
@@ -202,36 +210,35 @@ class SubjectDataset(Dataset):
             
             data['struct_names'] = np.array(struct_name_col)
 
-        """SUBJECT INFO - NB NOT COMPLETE WITH SCORES"""
+        """SUBJECT INFO"""
         if 'scores' in self.data_string:
-            subject_metadata = subject.subject_metadata
             
-            mmse = subject_metadata['MMSE Total Score'].iloc[0]
-            gdscale = subject_metadata['GDSCALE Total Score'].iloc[0]
-            faq = subject_metadata['FAQ Total Score'].iloc[0]
-            npiq = subject_metadata['NPI-Q Total Score'].iloc[0]
+            mmse = subject.subject_metadata['MMSE Total Score'].iloc[0]
+            gdscale = subject.subject_metadata['GDSCALE Total Score'].iloc[0]
+            faq = subject.subject_metadata['FAQ Total Score'].iloc[0]
+            npiq = subject.subject_metadata['NPI-Q Total Score'].iloc[0]
 
             data['scores'] = [mmse, gdscale, faq, npiq]
         
             data['score_names'] = ['MMSE Total Score', 'GDSCALE Total Score', 'FAQ Total Score', 'NPI-Q Total Score']
         
-            # Convert research group disease label str to number for pytorch
-            if len(self.selected_labels) == 3:
-                mapping = {
-                    'CN': 0,
-                    'MCI': 1,
-                    'AD': 2
-                }
-            elif len(self.selected_labels) == 2:
-                mapping = {
-                    'CN': 0,
-                    'MCI': 1,
-                    'AD': 1
-                }
+        """RESEARCH GROUP"""
+        # Convert research group disease label str to number for pytorch
+        if len(self.selected_labels) == 3:
+            mapping = {
+                'CN': 0,
+                'MCI': 1,
+                'AD': 2
+            }
+        elif len(self.selected_labels) == 2:
+            mapping = {
+                'CN': 0,
+                'MCI': 1,
+                'AD': 1
+            }
 
-            # Get the value of the mapping, -1 if not found
-            research_group = mapping.get(subject_metadata['Research Group'].iloc[0], -1)
-            data['research_group'] = research_group
+        # Get the value of the mapping, -1 if not found
+        data['research_group'] = mapping.get(subject.subject_metadata['Research Group'].iloc[0], -1)
 
         return data
         
