@@ -8,6 +8,7 @@ from pointnet2_benny import pointnet2_cls_msg
 import cnn3d_xmuyzz.ResNetV2
 
 import dill as pickle
+import shap
 from captum.attr import *
 import pyvista as pv
 from matplotlib.colors import Normalize
@@ -69,6 +70,47 @@ def pointnet_ig(model, cloud, device):
         attributions = attributions.cpu().numpy()
     
     return attributions, pred_research_group
+
+def pointnet_shap(model, cloud, device):
+
+    model.to(device)
+    
+    model.eval()
+
+    with torch.no_grad():
+
+        # Wrap model as pointnet_cls outputs a tuple for some reason
+        wrapped_model = lambda x: model(x)[0]
+
+        input = torch.from_numpy(cloud)
+
+        # NN expects float32 on cuda
+        input = input.type(torch.float32).to(device)
+
+        # Unsqueeze to add empty batch dimension then transpose  to 3 x n as expected by pointnet
+        input = input.unsqueeze(0).transpose(2, 1)
+        
+        output = wrapped_model(input)
+        
+        prediction = torch.argmax(torch.nn.functional.softmax(output, dim=1)).cpu().numpy()
+        
+        mapping = {
+            0: 'CN',
+            1: 'MCI',
+        }
+            
+        # Get the value of the mapping, -1 if not found
+        pred_research_group = mapping.get(int(prediction), -1)
+
+        explainer = shap.DeepExplainer(model, input)
+
+        shap_values = explainer.shap_values(cloud)
+        
+        # Transpose back to n x 3 and remove batch dim
+        shap_values = shap_values.transpose(1, 2).squeeze(0)
+    
+    return shap_values, pred_research_group
+
 
 
 '''def vis_attributions(attributions, subject, cloud, pred_research_group):
