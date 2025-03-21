@@ -67,28 +67,31 @@ def pointnet_ig(model, cloud, device):
     
     model.eval()
 
-    wrapped_model = PointNetWrapper(model)
+    with torch.no_grad():
 
-    wrapped_model.to(device)
+        wrapped_model = PointNetWrapper(model)
 
-    ig = IntegratedGradients(wrapped_model)
+        wrapped_model.to(device)
 
-    # NN expects float32 tensor on device
-    input = torch.from_numpy(cloud).type(torch.float32).to(device)
-    
-    pred_research_group, pred_class, _ = get_prediction(wrapped_model, input)
+        ig = IntegratedGradients(wrapped_model)
 
-    # Baseline is zeros, however could also be some kind of noise cloud
-    baseline = torch.zeros_like(input)
+        # NN expects float32 tensor on device
+        input = torch.from_numpy(cloud).type(torch.float32).to(device)
 
-    # NB do we always want target to be 1 or the predicted class?
-    attributions = ig.attribute(input, baseline, target=1)
-    
-    # Move to CPU for processing
-    attributions = attributions.cpu().numpy()
+        pred_research_group, pred_class, _ = get_prediction(wrapped_model, input)
+
+        # Baseline is zeros, however could also be some kind of noise cloud
+        baseline = torch.zeros_like(input)
+
+        # NB do we always want target to be 1 or the predicted class?
+        attributions = ig.attribute(input, baseline, target=1)
+
+        # Move to CPU for processing
+        attributions = attributions.cpu().numpy()
     
     return attributions, pred_research_group
 
+## THIS METHOD IS BETTER, BECAUSE WE WANT TO PASS THE MATRIX IN WHERE POINTS ARE FEATURES OTHERWISE IG WILL BE CALCULATING THE IMPORTANCE OF X,Y,Z
 def pointnet_ig_old(model, cloud, device):
 
     model.to(device)
