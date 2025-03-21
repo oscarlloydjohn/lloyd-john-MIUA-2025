@@ -44,52 +44,57 @@ class PointNetWrapper(torch.nn.Module):
 
         return x
 
-# Use a model to run a prediction, and return a string of the research group along with the tensor
-def get_prediction(model, input):
+# Use pointnet model to run a prediction on a numpy input, and return a string of the research group along with the output as a numpy array
+def get_prediction(model, input, device):
+
+    input = torch.from_numpy(input).type(torch.float32).to(device)
+
+    model = PointNetWrapper(model)
+
+    model.to(device)
 
     mapping = {
         0: 'CN',
         1: 'MCI',
     }
 
-    output = model(input)
+    # Remove batch dim
+    output = model(input).squeeze(0)
 
-    pred_class = int(torch.argmax(torch.nn.functional.softmax(output, dim=1)).cpu().numpy())
+    pred_class = int(torch.argmax(torch.nn.functional.softmax(output, dim=0)).cpu().numpy())
 
     pred_research_group = mapping.get(pred_class, -1)
 
+    output = output.detach().cpu().numpy()
+
     return pred_research_group, pred_class, output
 
-# THIS FUNCTION IS DEPRECATED 
+# THIS FUNCTION IS DEPRECATED AND IS KEPT AS DEMONSTRATION
 def pointnet_ig_deprecated(model, cloud, device):
 
     model.to(device)
     
     model.eval()
 
-    with torch.no_grad():
+    wrapped_model = PointNetWrapper(model)
 
-        wrapped_model = PointNetWrapper(model)
+    wrapped_model.to(device)
 
-        wrapped_model.to(device)
+    ig = IntegratedGradients(wrapped_model)
 
-        ig = IntegratedGradients(wrapped_model)
+    # NN expects float32 tensor on device
+    input = torch.from_numpy(cloud).type(torch.float32).to(device)
 
-        # NN expects float32 tensor on device
-        input = torch.from_numpy(cloud).type(torch.float32).to(device)
+    # Baseline is zeros, however could also be some kind of noise cloud
+    baseline = torch.zeros_like(input)
 
-        pred_research_group, pred_class, _ = get_prediction(wrapped_model, input)
+    # NB do we always want target to be 1 or the predicted class?
+    attributions = ig.attribute(input, baseline, target=1)
 
-        # Baseline is zeros, however could also be some kind of noise cloud
-        baseline = torch.zeros_like(input)
-
-        # NB do we always want target to be 1 or the predicted class?
-        attributions = ig.attribute(input, baseline, target=1)
-
-        # Move to CPU for processing
-        attributions = attributions.cpu().numpy()
+    # Move to CPU for processing
+    attributions = attributions.cpu().numpy()
     
-    return attributions, pred_research_group
+    return attributions
 
 ## THIS METHOD IS BETTER, BECAUSE WE WANT TO PASS THE MATRIX IN WHERE POINTS ARE FEATURES OTHERWISE IG WILL BE CALCULATING THE IMPORTANCE OF X,Y,Z
 def pointnet_ig(model, cloud, device):
@@ -98,48 +103,34 @@ def pointnet_ig(model, cloud, device):
     
     model.eval()
 
-    with torch.no_grad():
+    # Wrap model as pointnet_cls outputs a tuple for some reason
+    wrapped_model = lambda x: model(x)[0]
 
-        # Wrap model as pointnet_cls outputs a tuple for some reason
-        wrapped_model = lambda x: model(x)[0]
+    ig = IntegratedGradients(wrapped_model)
 
-        ig = IntegratedGradients(wrapped_model)
+    input = torch.from_numpy(cloud)
 
-        input = torch.from_numpy(cloud)
+    # NN expects float32 on cuda
+    input = input.type(torch.float32).to(device)
 
-        # NN expects float32 on cuda
-        input = input.type(torch.float32).to(device)
+    # Unsqueeze to add empty batch dimension then transpose  to 3 x n as expected by pointnet
+    input = input.unsqueeze(0).transpose(2, 1)
 
-        # Unsqueeze to add empty batch dimension then transpose  to 3 x n as expected by pointnet
-        input = input.unsqueeze(0).transpose(2, 1)
-        
-        output = wrapped_model(input)
-        
-        prediction = torch.argmax(torch.nn.functional.softmax(output, dim=1)).cpu().numpy()
-        
-        mapping = {
-            0: 'CN',
-            1: 'MCI',
-        }
-            
-        # Get the value of the mapping, -1 if not found
-        pred_research_group = mapping.get(int(prediction), -1)
+    # Baseline is zeros, however could also be some kind of noise cloud
+    baseline = torch.zeros_like(input)
 
-        # Baseline is zeros, however could also be some kind of noise cloud
-        baseline = torch.zeros_like(input)
-
-        attributions = ig.attribute(input, baseline, target=1, internal_batch_size=1)
-        
-        # Transpose back to n x 3 and remove batch dim
-        attributions = attributions.transpose(1, 2).squeeze(0)
-        
-        # Move to CPU for processing
-        attributions = attributions.cpu().numpy()
+    attributions = ig.attribute(input, baseline, target=1, internal_batch_size=1)
     
-    return attributions, pred_research_group
+    # Transpose back to n x 3 and remove batch dim
+    attributions = attributions.transpose(1, 2).squeeze(0)
+    
+    # Move to CPU for processing
+    attributions = attributions.cpu().numpy()
+    
+    return attributions
 
 
-# Takes a model and a numpy array input and returns a numpy array of attributions
+# THIS FUNCTION IS DEPRECATED AND IS KEPT AS DEMONSTRATION
 def pointnet_saliency_deprecated(model, cloud, device):
 
     model.to(device)
@@ -150,20 +141,18 @@ def pointnet_saliency_deprecated(model, cloud, device):
 
     wrapped_model.to(device)
 
-    ig = Saliency(wrapped_model)
+    saliency = Saliency(wrapped_model)
 
     # NN expects float32 tensor on device
     input = torch.from_numpy(cloud).type(torch.float32).to(device)
-    
-    pred_research_group, pred_class, _ = get_prediction(wrapped_model, input)
 
     # NB do we always want target to be 1 or the predicted class?
-    attributions = ig.attribute(input, target=1, abs=False)
-    
+    attributions = saliency.attribute(input, target=1, abs=False)
+
     # Move to CPU for processing
     attributions = attributions.cpu().numpy()
     
-    return attributions, pred_research_group
+    return attributions
 
 def pointnet_saliency(model, cloud, device):
 
@@ -171,42 +160,28 @@ def pointnet_saliency(model, cloud, device):
     
     model.eval()
 
-    with torch.no_grad():
+    # Wrap model as pointnet_cls outputs a tuple for some reason
+    wrapped_model = lambda x: model(x)[0]
 
-        # Wrap model as pointnet_cls outputs a tuple for some reason
-        wrapped_model = lambda x: model(x)[0]
+    saliency = Saliency(wrapped_model)
 
-        ig = Saliency(wrapped_model)
+    input = torch.from_numpy(cloud)
 
-        input = torch.from_numpy(cloud)
+    # NN expects float32 on cuda
+    input = input.type(torch.float32).to(device)
 
-        # NN expects float32 on cuda
-        input = input.type(torch.float32).to(device)
+    # Unsqueeze to add empty batch dimension then transpose  to 3 x n as expected by pointnet
+    input = input.unsqueeze(0).transpose(2, 1)
 
-        # Unsqueeze to add empty batch dimension then transpose  to 3 x n as expected by pointnet
-        input = input.unsqueeze(0).transpose(2, 1)
-        
-        output = wrapped_model(input)
-        
-        prediction = torch.argmax(torch.nn.functional.softmax(output, dim=1)).cpu().numpy()
-        
-        mapping = {
-            0: 'CN',
-            1: 'MCI',
-        }
-            
-        # Get the value of the mapping, -1 if not found
-        pred_research_group = mapping.get(int(prediction), -1)
-
-        attributions = ig.attribute(input, target=1, abs=False)
-        
-        # Transpose back to n x 3 and remove batch dim
-        attributions = attributions.transpose(1, 2).squeeze(0)
-        
-        # Move to CPU for processing
-        attributions = attributions.cpu().numpy()
+    attributions = saliency.attribute(input, target=1, abs=False)
     
-    return attributions, pred_research_group
+    # Transpose back to n x 3 and remove batch dim
+    attributions = attributions.transpose(1, 2).squeeze(0)
+    
+    # Move to CPU for processing
+    attributions = attributions.cpu().numpy()
+    
+    return attributions
 
 def vis_attributions(attributions: np.ndarray, subject: Subject, cloud: np.ndarray, pred_research_group: str, plot_attributions: bool = False, power: float = 0.25) -> None:
     
