@@ -60,8 +60,8 @@ def get_prediction(model, input):
 
     return pred_research_group, pred_class, output
 
-# Takes a model and a numpy array input and returns a numpy array of attributions
-def pointnet_ig(model, cloud, device):
+# THIS FUNCTION IS DEPRECATED 
+def pointnet_ig_deprecated(model, cloud, device):
 
     model.to(device)
     
@@ -92,7 +92,7 @@ def pointnet_ig(model, cloud, device):
     return attributions, pred_research_group
 
 ## THIS METHOD IS BETTER, BECAUSE WE WANT TO PASS THE MATRIX IN WHERE POINTS ARE FEATURES OTHERWISE IG WILL BE CALCULATING THE IMPORTANCE OF X,Y,Z
-def pointnet_ig_old(model, cloud, device):
+def pointnet_ig(model, cloud, device):
 
     model.to(device)
     
@@ -140,7 +140,7 @@ def pointnet_ig_old(model, cloud, device):
 
 
 # Takes a model and a numpy array input and returns a numpy array of attributions
-def pointnet_saliency(model, cloud, device):
+def pointnet_saliency_deprecated(model, cloud, device):
 
     model.to(device)
     
@@ -162,6 +162,49 @@ def pointnet_saliency(model, cloud, device):
     
     # Move to CPU for processing
     attributions = attributions.cpu().numpy()
+    
+    return attributions, pred_research_group
+
+def pointnet_saliency(model, cloud, device):
+
+    model.to(device)
+    
+    model.eval()
+
+    with torch.no_grad():
+
+        # Wrap model as pointnet_cls outputs a tuple for some reason
+        wrapped_model = lambda x: model(x)[0]
+
+        ig = Saliency(wrapped_model)
+
+        input = torch.from_numpy(cloud)
+
+        # NN expects float32 on cuda
+        input = input.type(torch.float32).to(device)
+
+        # Unsqueeze to add empty batch dimension then transpose  to 3 x n as expected by pointnet
+        input = input.unsqueeze(0).transpose(2, 1)
+        
+        output = wrapped_model(input)
+        
+        prediction = torch.argmax(torch.nn.functional.softmax(output, dim=1)).cpu().numpy()
+        
+        mapping = {
+            0: 'CN',
+            1: 'MCI',
+        }
+            
+        # Get the value of the mapping, -1 if not found
+        pred_research_group = mapping.get(int(prediction), -1)
+
+        attributions = ig.attribute(input, target=1, abs=False)
+        
+        # Transpose back to n x 3 and remove batch dim
+        attributions = attributions.transpose(1, 2).squeeze(0)
+        
+        # Move to CPU for processing
+        attributions = attributions.cpu().numpy()
     
     return attributions, pred_research_group
 
