@@ -25,7 +25,71 @@ from ozzy_torch_utils.train_nn import *
 from ozzy_torch_utils.model_parameters import *
 from ozzy_torch_utils.init_dataloaders import *
 
+# Black box wrapper for pointnet, allowing it to take a single input with no batch dimension
+class PointNetWrapper(torch.nn.Module):
+
+    def __init__(self, model):
+        
+        super(PointNetWrapper, self).__init__()
+
+        self.model = model
+
+    def forward(self, x):
+        
+        # Add batch dim and transpose to 3 x n for pointnet
+        x = x.unsqueeze(0).transpose(2, 1)
+
+        # Predict, taking only output and not l3_layer from pointnet
+        x = self.model(x)[0]
+
+        return x
+
+# Use a model to run a prediction, and return a string of the research group along with the tensor
+def get_prediction(model, input):
+
+    mapping = {
+        0: 'CN',
+        1: 'MCI',
+    }
+
+    output = model(input)
+
+    pred_class = int(torch.argmax(torch.nn.functional.softmax(output, dim=1)).cpu().numpy())
+
+    pred_research_group = mapping.get(pred_class, -1)
+
+    return pred_research_group, pred_class, output
+
+# Takes a model and a numpy array input and returns a numpy array of attributions
 def pointnet_ig(model, cloud, device):
+
+    model.to(device)
+    
+    model.eval()
+
+    wrapped_model = PointNetWrapper(model)
+
+    wrapped_model.to(device)
+
+    ig = IntegratedGradients(wrapped_model)
+
+    # NN expects float32 tensor on device
+    input = torch.from_numpy(cloud).type(torch.float32).to(device)
+    
+    pred_research_group, pred_class, _ = get_prediction(wrapped_model, input)
+
+    # Baseline is zeros, however could also be some kind of noise cloud
+    baseline = torch.zeros_like(input)
+
+    # NB do we always want target to be 1 or the predicted class?
+    attributions = ig.attribute(input, baseline, target=1)
+    
+    # Move to CPU for processing
+    attributions = attributions.cpu().numpy()
+    
+    return attributions, pred_research_group
+
+def pointnet_ig_old(model, cloud, device):
 
     model.to(device)
     
@@ -71,100 +135,51 @@ def pointnet_ig(model, cloud, device):
     
     return attributions, pred_research_group
 
-def pointnet_shap(model, cloud, device):
+
+# Takes a model and a numpy array input and returns a numpy array of attributions
+def pointnet_saliency(model, cloud, device):
 
     model.to(device)
     
     model.eval()
 
-    with torch.no_grad():
+    wrapped_model = PointNetWrapper(model)
 
-        # Wrap model as pointnet_cls outputs a tuple for some reason
-        wrapped_model = lambda x: model(x)[0]
+    wrapped_model.to(device)
 
-        input = torch.from_numpy(cloud)
+    ig = Saliency(wrapped_model)
 
-        # NN expects float32 on cuda
-        input = input.type(torch.float32).to(device)
-
-        # Unsqueeze to add empty batch dimension then transpose  to 3 x n as expected by pointnet
-        input = input.unsqueeze(0).transpose(2, 1)
-        
-        output = wrapped_model(input)
-        
-        prediction = torch.argmax(torch.nn.functional.softmax(output, dim=1)).cpu().numpy()
-        
-        mapping = {
-            0: 'CN',
-            1: 'MCI',
-        }
-            
-        # Get the value of the mapping, -1 if not found
-        pred_research_group = mapping.get(int(prediction), -1)
-
-        explainer = shap.DeepExplainer(model, input)
-
-        shap_values = explainer.shap_values(cloud)
-        
-        # Transpose back to n x 3 and remove batch dim
-        shap_values = shap_values.transpose(1, 2).squeeze(0)
+    # NN expects float32 tensor on device
+    input = torch.from_numpy(cloud).type(torch.float32).to(device)
     
-    return shap_values, pred_research_group
+    pred_research_group, pred_class, _ = get_prediction(wrapped_model, input)
 
+    # NB do we always want target to be 1 or the predicted class?
+    attributions = ig.attribute(input, target=1, abs=False)
+    
+    # Move to CPU for processing
+    attributions = attributions.cpu().numpy()
+    
+    return attributions, pred_research_group
 
-
-'''def vis_attributions(attributions, subject, cloud, pred_research_group):
+def vis_attributions(attributions: np.ndarray, subject: Subject, cloud: np.ndarray, pred_research_group: str, plot_attributions: bool = False, power: float = 0.25) -> None:
     
     # Sum x, y and z values for an overall attribution for that point
     xyz_sum = np.sum(attributions, axis=1)
 
-    xyz_sum = np.sign(xyz_sum) * np.power(np.abs(xyz_sum), 0.1)
+    if plot_attributions:
 
-    # Normalise into range -1, 1 such that positive and negative attributions are preserved
-    norm = Normalize(vmin = -np.max(np.abs(xyz_sum)), vmax = np.max(np.abs(xyz_sum)))
+        plt.plot(xyz_sum)
 
-    norm_attributions = norm(xyz_sum)
+        plt.show()
 
-    # Cmap for pyvista
-    cmap = plt.get_cmap('seismic')
-    colours = cmap(norm_attributions)
+    xyz_sum = np.sign(xyz_sum) * np.power(np.abs(xyz_sum), power)
 
-    pv_cloud = pv.PolyData(cloud)
+    if plot_attributions:
+        
+        plt.plot(xyz_sum)
 
-    plotter = pv.Plotter()
-
-    plotter.add_points(pv_cloud, scalars=colours, rgb=True)
-
-    plotter.set_background("black")
-
-    # THIS IS NOT FOR USE, IT IS RUNNING PREDICTIONS ON TRAINING DATA!!
-    plotter.add_text("This is just a test running on training data!", color='white')
-    plotter.add_text(f"True class: {str(subject.subject_metadata['Research Group'].iloc[0])} \n Predicted class: {pred_research_group} ", color='white', position='upper_right')
-
-    plotter.show()
-    
-    return'''
-
-def vis_attributions(attributions: np.ndarray, subject: Subject, cloud: np.ndarray, pred_research_group: str, plot_attributions: bool = False) -> None:
-    
-    # Sum x, y and z values for an overall attribution for that point
-    xyz_sum = np.sum(attributions, axis=1)
-
-    def power_transform(data, power):
-
-        return np.sign(data) * np.power(np.abs(data), power)
-
-    '''plt.plot(xyz_sum)
-
-    plt.show()
-    '''
-
-    xyz_sum = power_transform(xyz_sum, 0.25)
-
-    '''plt.plot(xyz_sum)
-
-    plt.show()
-    '''
+        plt.show()
 
     # Normalise such that 0 attribution maps to 0.5 and the relative sizes of positive and negative attributions is preserved
     def norm(data):
@@ -179,10 +194,11 @@ def vis_attributions(attributions: np.ndarray, subject: Subject, cloud: np.ndarr
 
     norm_xyz_sum = norm(xyz_sum)
 
-    '''plt.plot(norm_xyz_sum)
+    if plot_attributions:
+        
+        plt.plot(xyz_sum)
 
-    plt.show()
-    '''
+        plt.show()
 
     # Have to use custom cmap to force the 0 attributions to be white
     colours = [(0, 'blue'), (0.5, 'white'), (1, 'red')]
