@@ -2,6 +2,8 @@
 
 IMAGE_NAME="your-image-name"
 DOCKERFILE_PATH="path/to/Dockerfile"
+HOST_DIR="/path/to/host/dir"
+CONTAINER_DIR="/app"
 
 # Check if nvidia-smi is available to determine GPU presence
 if command -v nvidia-smi &> /dev/null; then
@@ -16,10 +18,10 @@ if command -v docker &> /dev/null; then
     docker build -t $IMAGE_NAME -f $DOCKERFILE_PATH .
     if [ "$GPU_SUPPORT" = true ]; then
         echo "Running Docker with GPU support"
-        docker run --gpus all -it $IMAGE_NAME
+        docker run --gpus all -v $HOST_DIR:$CONTAINER_DIR -it $IMAGE_NAME /app/run_fastsurfer.sh
     else
         echo "Running Docker without GPU support"
-        docker run -it $IMAGE_NAME
+        docker run -v $HOST_DIR:$CONTAINER_DIR -it $IMAGE_NAME /app/run_fastsurfer.sh
     fi
 # Check if Singularity is installed
 elif command -v singularity &> /dev/null; then
@@ -28,10 +30,10 @@ elif command -v singularity &> /dev/null; then
     echo "Running Singularity container from Docker image..."
     if [ "$GPU_SUPPORT" = true ]; then
         echo "Running Singularity with GPU support"
-        singularity run --nv docker-daemon://$IMAGE_NAME:latest
+        singularity run --nv -B $HOST_DIR:$CONTAINER_DIR docker-daemon://$IMAGE_NAME:latest /app/run_fastsurfer.sh
     else
         echo "Running Singularity without GPU support"
-        singularity run docker-daemon://$IMAGE_NAME:latest
+        singularity run -B $HOST_DIR:$CONTAINER_DIR docker-daemon://$IMAGE_NAME:latest /app/run_fastsurfer.sh
     fi
 else
     echo "Neither Docker nor Singularity is installed on this system."
