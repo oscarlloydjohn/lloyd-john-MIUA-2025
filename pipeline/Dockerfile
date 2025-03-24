@@ -1,5 +1,7 @@
 FROM deepmi/fastsurfer:latest
 
+USER root
+
 # Set the working directory
 WORKDIR /app
 
@@ -16,4 +18,6 @@ RUN pip3 install --no-cache-dir -r /app/requirements.txt
 # Copy the source code
 COPY src /app/src
 
-CMD ["python3", "src/pipeline.py"]
+USER nonroot
+
+CMD ["/bin/bash"]
