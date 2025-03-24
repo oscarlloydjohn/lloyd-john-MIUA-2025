@@ -2,7 +2,6 @@
 # Torch
 import torch
 import torch.optim as optim
-from torcheval.metrics import *
 import torch.nn.functional as F
 
 # Benny pointnet
@@ -16,8 +15,7 @@ from preprocessing_post_fastsurfer.alignment import *
 from preprocessing_post_fastsurfer.vis import *
 from preprocessing_post_fastsurfer.cropping import *
 from preprocessing_post_fastsurfer.mesh_creation import *
-from ..explain_pointnet import *
-from .combined_models import *
+from combined_models import *
 from ozzy_torch_utils.split_dataset import *
 from ozzy_torch_utils.subject_dataset import *
 from ozzy_torch_utils.plot import *

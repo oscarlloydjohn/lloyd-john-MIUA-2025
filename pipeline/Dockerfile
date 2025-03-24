@@ -13,11 +13,9 @@ RUN apt-get update && \
 
 # Copy requirements.txt and install Python dependencies only if they are not already installed
 COPY requirements.txt /app/requirements.txt
-RUN pip3 install --no-cache-dir -r /app/requirements.txt || true
+RUN pip3 install --no-cache-dir -r /app/requirements.txt
 
 # Copy the source code
 COPY src /app/src
 
-USER nonroot
-
-CMD ["/bin/bash"]
+ENTRYPOINT ["/bin/bash"]
