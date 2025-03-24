@@ -50,9 +50,12 @@ def process_single_subject(subject: Subject):
     crop(subject, "Left-Hippocampus_aligned.nii", bbox)
 
     # Convert the left hippocampus to mesh
-    volume_to_mesh(subject, 'Left-Hippocampus_aligned_cropped.nii', smooth=True, number_of_iterations=5, lambda_filter=1.2)
+    mesh_dict = volume_to_mesh(subject, 'Left-Hippocampus_aligned_cropped.nii', smooth=True, number_of_iterations=5, lambda_filter=1.2)
 
     # Check there are enough points
+    if len(mesh_dict['verts']) < 1048:
+
+        print("Error: number of hippocampus mesh points is too low, the scan may be corrupted or inadequate")
 
     # Downsample the cloud to 1048 points for pointnet
     downsample_cloud(subject, "Left-Hippocampus_aligned_cropped_mesh.npz", 1048)
@@ -162,6 +165,5 @@ if __name__ == "__main__":
         subject_data['scores'], subject_data['score_names'] = None, None
 
     get_combined_prediction(subject)
-
 
     shutil.rmtree("/tmp/mripredict/")
