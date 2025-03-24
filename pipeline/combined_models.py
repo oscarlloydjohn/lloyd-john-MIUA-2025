@@ -22,31 +22,27 @@ from ozzy_torch_utils.init_dataloaders import *
 
 from explain_pointnet import get_prediction
 
-# Black box wrapper for pointnet, allowing it to take a single input with no batch dimension
-class PointNetWrapper(torch.nn.Module):
-
-    def __init__(self, model):
-        
-        super(PointNetWrapper, self).__init__()
-
-        self.model = model
-
-    def forward(self, x):
-        
-        # Add batch dim and transpose to 3 x n for pointnet
-        x = x.unsqueeze(0).transpose(2, 1)
-
-        # Predict, taking only output and not l3_layer from pointnet
-        x = self.model(x)[0]
-
-        return x
-
 # Use pointnet model to run a prediction on a numpy input, and return a string of the research group along with the output as a numpy array
-def get_prediction(model, input, device):
+def get_pointnet_prediction(input, device):
 
-    input = torch.from_numpy(input).type(torch.float32).to(device)
+    model = pointnet2_cls_ssg.get_model(2, normal_channel=False)
 
-    model = PointNetWrapper(model)
+    model.load_state_dict(torch.load("pointnet.pth", weights_only=True))
+
+    if isinstance(input, torch.Tensor):
+
+        input = input.type(torch.float32).to(device)
+
+    elif isinstance(input, np.ndarray):
+
+        input = torch.from_numpy(input).type(torch.float32).to(device)
+
+    else:
+
+        print("Please input numpy array or torch tensor")
+
+    # Add batch dim and transpose to 3 x n for pointnet
+    input = input.unsqueeze(0).transpose(2,1)
 
     model.to(device)
 
@@ -66,27 +62,32 @@ def get_prediction(model, input, device):
 
     return pred_research_group, pred_class, output
 
+def get_volumes_prediction(input):
+
+    with open("volumes_gbdt.pkl", 'rb') as file:
+    
+        model = pickle.load(file)
+
+    output = model.predict(input)
+
+    return output
+
+def get_scores_prediction(input):
+
+    return
+
 def get_combined_prediction(subject_data):
 
-    # Load in the model 
+    _, _, pointnet_output = get_pointnet_prediction(subject_data['cloud'], 'cpu')
 
-    # Run the prediction on the point cloud
-    model = pointnet2_cls_ssg.get_model(2, normal_channel=False)
+    volumes_output = get_volumes_prediction(subject_data['volumes'])
 
-    model.load_state_dict(torch.load("/uolstore/home/student_lnxhome01/sc22olj/Compsci/year3/individual-project-COMP3931/individual-project-sc22olj/pipeline/current_model.pth", weights_only=True))
+    if subject_data['scores'] is not None:
 
-    # Load in the subject's cloud
-    cloud = np.load(os.path.join(subject.path, 'Left-Hippocampus_cropped_mesh_downsampledcloud.npy'))
+        scores_output = get_scores_prediction()
 
-    # Run the prediction
-    _, _, pointnet_output = get_prediction(model, cloud, 'cpu')
+        return (pointnet_output[1] + volumes_output + scores_output)/3
+    
+    else:
 
-    # Predict using the parcellation volumes
-    volumes_output = 
-
-
-    # Predict using the scores
-    scores_output = 
-
-
-    # Average the predictions
+        return (pointnet_output[1] + volumes_output)/2
