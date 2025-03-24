@@ -1,35 +1,39 @@
 #!/bin/bash
 
-if [ -z "$1" ]; then
-    echo "Usage: $0 <data_path>"
+IMAGE_NAME="your-image-name"
+DOCKERFILE_PATH="path/to/Dockerfile"
+
+# Check if nvidia-smi is available to determine GPU presence
+if command -v nvidia-smi &> /dev/null; then
+    GPU_SUPPORT=true
+else
+    GPU_SUPPORT=false
+fi
+
+# Check if Docker is installed
+if command -v docker &> /dev/null; then
+    echo "Building Docker image..."
+    docker build -t $IMAGE_NAME -f $DOCKERFILE_PATH .
+    if [ "$GPU_SUPPORT" = true ]; then
+        echo "Running Docker with GPU support"
+        docker run --gpus all -it $IMAGE_NAME
+    else
+        echo "Running Docker without GPU support"
+        docker run -it $IMAGE_NAME
+    fi
+# Check if Singularity is installed
+elif command -v singularity &> /dev/null; then
+    echo "Building Docker image..."
+    docker build -t $IMAGE_NAME -f $DOCKERFILE_PATH .
+    echo "Running Singularity container from Docker image..."
+    if [ "$GPU_SUPPORT" = true ]; then
+        echo "Running Singularity with GPU support"
+        singularity run --nv docker-daemon://$IMAGE_NAME:latest
+    else
+        echo "Running Singularity without GPU support"
+        singularity run docker-daemon://$IMAGE_NAME:latest
+    fi
+else
+    echo "Neither Docker nor Singularity is installed on this system."
     exit 1
 fi
-
-PIPELINE_DIR=$(dirname "$0")
-SCRIPT_PATH="$PIPELINE_DIR/pipeline.py"
-LICENSE_PATH="$PIPELINE_DIR/license.txt"
-CONTAINER_PATH="$PIPELINE_DIR/PipelineContainer.sif"
-DATA_PATH="$PIPELINE_DIR/../path/to/data"
-
-# Extract the directory name and filename from the data path
-DIRNAME=$(dirname "$DATA_PATH")
-FILENAME=$(basename "$DATA_PATH")
-
-# Check for nvidia GPU
-if command -v nvidia-smi &> /dev/null; then
-    NV_FLAG="--nv"
-else
-    NV_FLAG=""
-fi
-
-# Build the Singularity container if it doesn't exist
-if [ ! -f "$CONTAINER_PATH" ]; then
-    singularity build $CONTAINER_PATH $PIPELINE_DIR/PipelineContainer.def
-fi
-
-singularity exec $NV_FLAG \
-    --no-home \
-    -B $DATA_PATH:$DATA_PATH \
-    -B $LICENSE_PATH:$LICENSE_PATH \
-    -B $SCRIPT_PATH:$SCRIPT_PATH \
-    $CONTAINER_PATH \ python3 $SCRIPT_PATH $DATA_PATH $LICENSE_PATH
