@@ -25,69 +25,138 @@ from explain_pointnet import get_prediction
 # Use pointnet model to run a prediction on a numpy input, and return a string of the research group along with the output as a numpy array
 def get_pointnet_prediction(input, device):
 
-    model = pointnet2_cls_ssg.get_model(2, normal_channel=False)
+    with torch.no_grad():
 
-    model.load_state_dict(torch.load("pointnet.pth", weights_only=True))
+        model = pointnet2_cls_ssg.get_model(2, normal_channel=False)
 
-    if isinstance(input, torch.Tensor):
+        model.load_state_dict(torch.load(os.path.join(os.path.dirname(__file__), "pointnet.pth"), weights_only=True))
 
-        input = input.type(torch.float32).to(device)
-
-    elif isinstance(input, np.ndarray):
+        model.eval()
 
         input = torch.from_numpy(input).type(torch.float32).to(device)
 
+        # Add batch dim and transpose to 3 x n for pointnet
+        input = input.unsqueeze(0).transpose(2,1)
+
+        model.to(device)
+
+        # Get output from model, ignoring extra info from pointnet
+        output = model(input)[0]
+
+        output = output.squeeze(0)
+
+        # Take negative logits and get probability
+        output = torch.nn.functional.softmax(output, dim=0)
+
+        pred_class = int(np.argmax(output.cpu().numpy()))
+
+        mapping = {
+            0: 'CN',
+            1: 'MCI',
+        }
+
+        pred_research_group = mapping.get(pred_class, -1)
+
+        output = output.cpu().numpy()
+
+        # Get only the positive class as they add up to 1 anyway
+        output = output[1]
+
+        return pred_research_group, pred_class, output
+
+def get_volumes_prediction(input):
+
+    # Sklearn expects batch dim
+    input = [input]
+
+    with open(os.path.join(os.path.dirname(__file__), "volumes_gbdt.pkl"), 'rb') as file:
+    
+        model = pickle.load(file)
+
+    output = model.predict_proba(input).squeeze(0)[1]
+
+    pred_class = int(model.predict(input))
+
+    mapping = {
+            0: 'CN',
+            1: 'MCI',
+        }
+
+    pred_research_group = mapping.get(pred_class, -1)
+
+    return pred_research_group, pred_class, output
+
+def get_scores_prediction(input):
+
+    input = [input]
+
+    with open(os.path.join(os.path.dirname(__file__), "scores_gbdt.pkl"), 'rb') as file:
+    
+        model = pickle.load(file)
+
+    output = model.predict_proba(input).squeeze(0)[1]
+
+    pred_class = int(model.predict(input))
+
+    mapping = {
+            0: 'CN',
+            1: 'MCI',
+        }
+
+    pred_research_group = mapping.get(pred_class, -1)
+
+    return pred_research_group, pred_class, output
+
+def get_ensemble_prediction_avg(subject_data):
+
+    _, _, pointnet_output = get_pointnet_prediction(subject_data['lhcampus_pointcloud_aligned'], 'cpu')
+
+    _, _, volumes_output = get_volumes_prediction(subject_data['volumes'])
+
+    if subject_data['scores'] is not None:
+        
+        _, _, scores_output = get_scores_prediction(subject_data['scores'])
+
+        average = (pointnet_output + volumes_output + scores_output)/3
+    
     else:
 
-        print("Please input numpy array or torch tensor")
+        average = (pointnet_output + volumes_output)/2
 
-    # Add batch dim and transpose to 3 x n for pointnet
-    input = input.unsqueeze(0).transpose(2,1)
-
-    model.to(device)
+    pred_class = round(average)
 
     mapping = {
         0: 'CN',
         1: 'MCI',
     }
 
-    # Remove batch dim
-    output = model(input).squeeze(0)
-
-    pred_class = int(torch.argmax(torch.nn.functional.softmax(output, dim=0)).cpu().numpy())
-
     pred_research_group = mapping.get(pred_class, -1)
 
-    output = output.detach().cpu().numpy()
+    return pred_research_group, pred_class, average
 
-    return pred_research_group, pred_class, output
+# Max probability rule (Lassila et. al)
+def get_ensemble_prediction_maxprob(subject_data):
 
-def get_volumes_prediction(input):
-
-    with open("volumes_gbdt.pkl", 'rb') as file:
+    pointnet_pred = get_pointnet_prediction(subject_data['lhcampus_pointcloud_aligned'], 'cpu')
     
-        model = pickle.load(file)
+    volumes_pred = get_volumes_prediction(subject_data['volumes'])
 
-    output = model.predict(input)
+    scores_pred = get_scores_prediction(subject_data['scores'])
 
-    return output
+    max_confidence = -np.inf
 
-def get_scores_prediction(input):
+    best_pred = None
 
-    return
+    best_index = -1
 
-def get_combined_prediction(subject_data):
+    for i, pred in enumerate([pointnet_pred, volumes_pred, scores_pred]):
 
-    _, _, pointnet_output = get_pointnet_prediction(subject_data['cloud'], 'cpu')
+        if pred[2] > max_confidence:
 
-    volumes_output = get_volumes_prediction(subject_data['volumes'])
+            max_confidence = pred[2]
 
-    if subject_data['scores'] is not None:
+            best_pred = pred
 
-        scores_output = get_scores_prediction()
+            best_index = i
 
-        return (pointnet_output[1] + volumes_output + scores_output)/3
-    
-    else:
-
-        return (pointnet_output[1] + volumes_output)/2
+    return best_pred[0], best_pred[1], best_pred[2], best_index
