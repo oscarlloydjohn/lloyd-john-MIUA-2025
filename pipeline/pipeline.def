@@ -31,4 +31,7 @@ From: deepmi/fastsurfer:cpu-v2.4.2
     exec /bin/bash
 
 %startscript
+    # Ensure the /app directory exists and has the correct permissions
+    mkdir -p /app
+    chown -R appuser:appuser /app
     exec /bin/bash
