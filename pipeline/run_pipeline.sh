@@ -21,14 +21,14 @@ fi
 # Check if Docker is installed
 if command -v docker &> /dev/null; then
     echo "Building Docker image..."
-    docker build --platform $PLATFORM -t $IMAGE_NAME -f $DOCKERFILE_PATH .
+    docker buildx create --use
+    docker buildx build --platform $PLATFORM -t $IMAGE_NAME -f $DOCKERFILE_PATH --load .
     echo "Running Docker without GPU support"
     docker run --platform $PLATFORM -v $HOST_DIR:$CONTAINER_DIR -it $IMAGE_NAME
-# Check if Singularity is installed and Docker is not available
+# Check if Singularity is installed
 elif command -v singularity &> /dev/null; then
-    echo "Building Singularity image from Dockerfile..."
-    docker build --platform $PLATFORM -t $IMAGE_NAME -f $DOCKERFILE_PATH .
-    singularity build $IMAGE_NAME.sif $SINGULARITY_DEF_PATH
+    echo "Building Singularity image from definition file..."
+    singularity build --arch $MACHINE_TYPE $IMAGE_NAME.sif $SINGULARITY_DEF_PATH
     echo "Running Singularity without GPU support"
     singularity run -B $HOST_DIR:$CONTAINER_DIR $IMAGE_NAME.sif
 else
