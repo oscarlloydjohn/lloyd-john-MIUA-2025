@@ -2,16 +2,11 @@ Bootstrap: docker
 From: deepmi/fastsurfer:cpu-v2.4.2
 
 %post
-    # Create the /app directory and set permissions
-    mkdir -p /app
-    chown -R root:root /app
-
     apt-get update && \
     apt-get install -y python3-pyqt5 || true && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
-    # The fastsurfer docker image already has most of the packages installed
     pip install open3d==0.19.0 
     pip install ants==0.0.7 
     pip install scikit-image==0.25.1 
@@ -19,22 +14,13 @@ From: deepmi/fastsurfer:cpu-v2.4.2
 
     groupadd -r appuser && useradd -r -g appuser appuser
 
-    # Ensure the /app directory has the correct permissions
     chown -R appuser:appuser /app
-
-%setup
-    # Ensure the /app directory exists and has the correct permissions
-    mkdir -p ${SINGULARITY_ROOTFS}/app/src
-    chown -R appuser:appuser ${SINGULARITY_ROOTFS}/app
 
 %files
     src /app/src
 
-%runscript
-    exec /bin/bash
+%environment
+    export PATH=/usr/local/bin:$PATH
 
-%startscript
-    # Ensure the /app directory exists and has the correct permissions
-    mkdir -p /app
-    chown -R appuser:appuser /app
+%runscript
     exec /bin/bash
