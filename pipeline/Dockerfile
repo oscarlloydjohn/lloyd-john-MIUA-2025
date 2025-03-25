@@ -26,6 +26,4 @@ USER appuser
 
 COPY src /app/src
 
-ENV TORCH_USE_NNPACK=0
-
 ENTRYPOINT ["/bin/bash"]

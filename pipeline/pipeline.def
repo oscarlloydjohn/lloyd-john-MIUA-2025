@@ -2,6 +2,10 @@ Bootstrap: docker
 From: deepmi/fastsurfer:cpu-v2.4.2
 
 %post
+    # Create the /app directory and set permissions
+    mkdir -p /app
+    chown -R root:root /app
+
     apt-get update && \
     apt-get install -y python3-pyqt5 || true && \
     apt-get clean && \
@@ -17,9 +21,6 @@ From: deepmi/fastsurfer:cpu-v2.4.2
 
     chown -R appuser:appuser /app
 
-%environment
-    export TORCH_USE_NNPACK=0
-
 %setup
     mkdir -p /app/src
 
@@ -27,4 +28,7 @@ From: deepmi/fastsurfer:cpu-v2.4.2
     src /app/src
 
 %runscript
+    exec /bin/bash
+
+%startscript
     exec /bin/bash
