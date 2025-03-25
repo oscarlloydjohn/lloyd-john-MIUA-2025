@@ -7,14 +7,14 @@ from preprocessing_post_fastsurfer.subject import *
 from preprocessing_post_fastsurfer.alignment import *
 from preprocessing_post_fastsurfer.cropping import *
 from preprocessing_post_fastsurfer.mesh_creation import *
-# from combined_models import *
+from combined_models import *
 
 def process_single_subject(subject: Subject):
 
     subject_data = {}
 
     # Get reference brain
-    reference_brain_array = extract_brain("/uolstore/home/student_lnxhome01/sc22olj/Compsci/year3/individual-project-COMP3931/individual-project-sc22olj/mni_icbm152_lin_nifti/fastsurfer-processed/mri/orig_nu.mgz", "/uolstore/home/student_lnxhome01/sc22olj/Compsci/year3/individual-project-COMP3931/individual-project-sc22olj/mni_icbm152_lin_nifti/fastsurfer-processed/mri/mask.mgz")
+    reference_brain_array = extract_brain(os.path.join(os.path.dirname(__file__), "mni_icbm152_lin_nifti/fastsurfer-processed/mri/orig_nu.mgz"), os.path.join(os.path.dirname(__file__), "mni_icbm152_lin_nifti/fastsurfer-processed/mri/mask.mgz"))
 
     # Align the MRI
     alignment(subject, reference_brain_array)
@@ -47,7 +47,7 @@ def process_single_subject(subject: Subject):
     # This is mimicking the torch Dataset
     
     # Load in the cloud
-    subject_data['cloud'] = np.load(os.path.join(subject.path, 'Left-Hippocampus_cropped_mesh_downsampledcloud.npy'))
+    subject_data['cloud'] = np.load(os.path.join(subject.path, 'Left-Hippocampus_aligned_cropped_mesh_downsampledcloud.npy'))
 
     # Get the volumetric data - this code is lifted from ozzy_torch_utils
     volume_col = subject.aseg_stats['Volume_mm3']
@@ -104,7 +104,7 @@ def get_scores():
 # THIS WHOLE FILE NEEDS TO RUN IN A DOCKER CONTAINER
 if __name__ == "__main__":
 
-    parser = argparse.ArgumentParser(description="Script for running a prediction on a single .nii file")
+    '''parser = argparse.ArgumentParser(description="Script for running a prediction on a single .nii file")
 
     parser.add_argument('--file_path', type=str, required=True)
     parser.add_argument('--license_path', type=str, required=True)
@@ -133,15 +133,15 @@ if __name__ == "__main__":
     shutil.copy(args.file_path, tmp_path)
 
     # Run fastsurfer on file
-    process_file("/tmp/mripredict/", filename, args.license_path, 4, tesla3=False)
+    process_file("/tmp/mripredict/", filename, args.license_path, 4, tesla3=False)'''
 
     # Process the subject
-    subject = Subject(tmp_path, None)
+    subject = Subject(os.path.join(os.path.dirname(__file__), "fastsurfer_sample"), None)
 
     subject_data = process_single_subject(subject)
 
     # Read in neurocognitive test scores
-    if input("Does the subject have test scores? (y/n)") == 'y':
+    if input("Does the subject have test scores? (y/n): ") == 'y':
         
         subject_data['scores'], subject_data['score_names'] = get_scores()
 
@@ -149,6 +149,6 @@ if __name__ == "__main__":
 
         subject_data['scores'], subject_data['score_names'] = None, None
 
-    #get_combined_prediction(subject)
+    get_combined_prediction(subject)
 
     #shutil.rmtree("/tmp/mripredict/")
