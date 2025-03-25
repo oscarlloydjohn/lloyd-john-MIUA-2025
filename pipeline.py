@@ -76,13 +76,11 @@ if __name__ == "__main__":
         print("Calculating ensemble prediction \n")
         prediction = get_ensemble_prediction_avg(pointnet_output, volumes_output, None, scores=False)
 
-    #vis_attributions(attributions, subject_data['lhcampus_pointcloud_aligned']).show()
+    vis_attributions(attributions, subject_data['lhcampus_pointcloud_aligned']).show()
 
     shap.plots.bar(shap_values, max_display=10)
 
-    print(shap_values)
-
-    vis_volumes(subject, shap_values)
+    vis_volumes(subject, shap_values).show()
 
     print(prediction)
 

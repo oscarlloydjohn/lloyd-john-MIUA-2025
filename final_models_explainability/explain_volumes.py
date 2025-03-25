@@ -10,7 +10,7 @@ from preprocessing_post_fastsurfer.subject import *
 
 def explain_volumes(model, volumes, struct_names):
 
-    volumes = volumes.reshape(1, -1)
+    volumes = volumes.squeeze(0)
 
     explainer = shap.Explainer(model, feature_names=struct_names)
 
@@ -32,7 +32,7 @@ def vis_volumes(subject, shap_values):
     aparc_array = nibabel.load(aparc).dataobj
 
     # Get only the values
-    shap_values = shap_values.values.squeeze(0)
+    shap_values = shap_values.values
 
     top_volumes = np.argsort(np.abs(shap_values))[::-1][:5]
 
