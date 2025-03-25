@@ -19,10 +19,13 @@ From: deepmi/fastsurfer:cpu-v2.4.2
 
     groupadd -r appuser && useradd -r -g appuser appuser
 
+    # Ensure the /app directory has the correct permissions
     chown -R appuser:appuser /app
 
 %setup
-    mkdir -p /app/src
+    # Ensure the /app directory exists and has the correct permissions
+    mkdir -p ${SINGULARITY_ROOTFS}/app/src
+    chown -R appuser:appuser ${SINGULARITY_ROOTFS}/app
 
 %files
     src /app/src
