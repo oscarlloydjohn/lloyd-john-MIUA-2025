@@ -2,7 +2,6 @@
 import shutil
 
 # Custom modules
-from preprocess import *
 from preprocessing_post_fastsurfer.subject import *
 from preprocessing_post_fastsurfer.alignment import *
 from preprocessing_post_fastsurfer.cropping import *
@@ -11,7 +10,7 @@ from ensemble.combined_models import *
 
 def process_single_subject(subject: Subject):
 
-    subject_data = {}
+    subject.subject_data = {}
 
     # Get reference brain
     reference_brain_array = extract_brain(os.path.join(os.path.dirname(__file__), "mni_icbm152_lin_nifti/fastsurfer-processed/mri/orig_nu.mgz"), os.path.join(os.path.dirname(__file__), "mni_icbm152_lin_nifti/fastsurfer-processed/mri/mask.mgz"))
@@ -62,6 +61,24 @@ def process_single_subject(subject: Subject):
 
     return subject_data
 
+def run_fastsurfer(data_path: os.PathLike[str], filename: str, threads = 4):
+
+    dirname = os.path.splitext(os.path.basename(filename))[0]
+
+    command = [
+        "/fastsurfer/run_fastsurfer.sh",
+        f"--sd", data_path,
+        "--sid", dirname,
+        f"--t1", f"{data_path}/{filename}",
+        "--seg_only", "--threads", f"{threads}"
+    ]
+
+    process = subprocess.Popen(command)
+    
+    process.wait()
+    
+    return
+
 def get_scores():
 
     score_names = ['MMSE Total Score', 'GDSCALE Total Score', 'FAQ Total Score', 'NPI-Q Total Score']
@@ -104,10 +121,10 @@ def get_scores():
 # THIS WHOLE FILE NEEDS TO RUN IN A DOCKER CONTAINER
 if __name__ == "__main__":
 
-    '''parser = argparse.ArgumentParser(description="Script for running a prediction on a single .nii file")
+    parser = argparse.ArgumentParser(description="Script for running a prediction on a single .nii file")
 
     parser.add_argument('--file_path', type=str, required=True)
-    parser.add_argument('--license_path', type=str, required=True)
+    parser.add_argument('--from_nii', type=bool, default=False)
 
     args = parser.parse_args()
 
@@ -119,7 +136,7 @@ if __name__ == "__main__":
         
         exit()
 
-    if not str(args.file_path).endswith('.nii'):
+    if not str(args.file_path).endswith('.nii') and args.from_nii:
 
         print("Please pass in an nii file")
         
@@ -132,11 +149,17 @@ if __name__ == "__main__":
 
     shutil.copy(args.file_path, tmp_path)
 
-    # Run fastsurfer on file
-    process_file("/tmp/mripredict/", filename, args.license_path, 4, tesla3=False)'''
+    if args.from_nii:
 
-    # Process the subject
-    subject = Subject(os.path.join(os.path.dirname(__file__), "fastsurfer_sample"), None)
+        # Run fastsurfer on file
+        process_file("/tmp/mripredict/", filename, args.license_path, 4, tesla3=False)
+
+        subject = Subject("/tmp/mripredict", None)
+    
+    else:
+
+        # Process the subject
+        subject = Subject(os.path.join(os.path.dirname(__file__), "fastsurfer_sample"), None)
 
     subject_data = process_single_subject(subject)
 
