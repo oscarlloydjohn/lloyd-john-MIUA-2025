@@ -1,179 +1,89 @@
-# Benny pointnet
 import shutil
+import shap
 
 # Custom modules
-from preprocessing_post_fastsurfer.subject import *
-from preprocessing_post_fastsurfer.alignment import *
-from preprocessing_post_fastsurfer.cropping import *
-from preprocessing_post_fastsurfer.mesh_creation import *
-from final_models.combined_models import *
+from final_models_explainability.get_predictions import *
+from pipeline_utils.image_processing import *
+from pipeline_utils.get_scores import *
 
-def process_single_subject(subject: Subject):
-
-    subject.subject_data = {}
-
-    # Get reference brain
-    reference_brain_array = extract_brain(os.path.join(os.path.dirname(__file__), "mni_icbm152_lin_nifti/fastsurfer-processed/mri/orig_nu.mgz"), os.path.join(os.path.dirname(__file__), "mni_icbm152_lin_nifti/fastsurfer-processed/mri/mask.mgz"))
-
-    # Align the MRI
-    alignment(subject, reference_brain_array)
-
-    # Align the aparc
-    aux_alignment(subject, subject.aparc, is_aparc=True)
-
-    # Extract the aligned left hippocampus
-    extract_region(subject, [17], subject.brain_aligned, subject.aparc_aligned, is_aligned=True)
-
-    # Get the bounding box of the hippocampus
-    hcampus_image_array = nibabel.load(os.path.join(subject.path, "Left-Hippocampus_aligned.nii")).get_fdata()
-
-    bbox = bounding_box(hcampus_image_array)
-
-    # Crop the left hippocampus
-    crop(subject, "Left-Hippocampus_aligned.nii", bbox)
-
-    # Convert the left hippocampus to mesh
-    mesh_dict = volume_to_mesh(subject, 'Left-Hippocampus_aligned_cropped.nii', smooth=True, number_of_iterations=5, lambda_filter=1.2)
-
-    # Check there are enough points
-    if len(mesh_dict['verts']) < 1048:
-
-        print("Error: number of hippocampus mesh points is too low, the scan may be corrupted or inadequate")
-
-    # Downsample the cloud to 1048 points for pointnet
-    downsample_cloud(subject, "Left-Hippocampus_aligned_cropped_mesh.npz", 1048)
-    
-    # This is mimicking the torch Dataset
-    
-    # Load in the cloud
-    subject_data['cloud'] = np.load(os.path.join(subject.path, 'Left-Hippocampus_aligned_cropped_mesh_downsampledcloud.npy'))
-
-    # Get the volumetric data - this code is lifted from ozzy_torch_utils
-    volume_col = subject.aseg_stats['Volume_mm3']
-
-    volume_col_normalised = volume_col / volume_col.sum() * 1000
-
-    struct_name_col = subject.aseg_stats['StructName']
-    
-    subject_data['volumes'] = np.array(volume_col_normalised)
-    
-    subject_data['struct_names'] = np.array(struct_name_col)
-
-    return subject_data
-
-def run_fastsurfer(data_path: os.PathLike[str], filename: str, threads = 4):
-
-    dirname = os.path.splitext(os.path.basename(filename))[0]
-
-    command = [
-        "/fastsurfer/run_fastsurfer.sh",
-        f"--sd", data_path,
-        "--sid", dirname,
-        f"--t1", f"{data_path}/{filename}",
-        "--seg_only", "--threads", f"{threads}"
-    ]
-
-    process = subprocess.Popen(command)
-    
-    process.wait()
-    
-    return
-
-def get_scores():
-
-    score_names = ['MMSE Total Score', 'GDSCALE Total Score', 'FAQ Total Score', 'NPI-Q Total Score']
-
-    def get_score_input(prompt, min_val, max_val):
-
-        while True:
-
-            try:
-
-                value = input(prompt)
-
-                if value == "":
-
-                    return np.nan
-                
-                value = float(value)
-
-                if min_val <= value <= max_val:
-
-                    return value
-                
-                else:
-
-                    print(f"Value must be between {min_val} and {max_val}.")
-
-            except ValueError:
-
-                print("Invalid input. Please enter a number or press enter for NaN.")
-
-    mmse = get_score_input("Enter 'MMSE Total Score' (0-30), or press enter if no score: ", 0, 30)
-    gdscale = get_score_input("Enter 'GDSCALE Total Score' (0-15), or press enter if no score: ", 0, 15)
-    faq = get_score_input("Enter 'FAQ Total Score' (0-30), or press enter if no score: ", 0, 30)
-    npiq = get_score_input("Enter 'NPI-Q Total Score' (0-12), or press enter if no score: ", 0, 12)
-
-    scores = [mmse, gdscale, faq, npiq]
-
-    return scores, score_names
-
-# THIS WHOLE FILE NEEDS TO RUN IN A DOCKER CONTAINER
+# THIS WHOLE FILE NEEDS TO RUN IN A DOCKER CONTAINER FOR FROM_NII
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(description="Script for running a prediction on a single .nii file")
 
-    parser.add_argument('--file_path', type=str, required=True)
-    parser.add_argument('--from_nii', type=bool, default=False)
+    parser.add_argument('--from_nii', type=str, default='')
 
     args = parser.parse_args()
 
-    filename = os.path.basename(args.file_path)
+    if args.from_nii != '':
 
-    if not os.path.exists(args.file_path):
-        
-        print(f"{args.file_path} does not exist")
-        
-        exit()
+        if not str(args.from_nii).endswith('.nii') or not os.path.isfile(args.from_nii):
 
-    if not str(args.file_path).endswith('.nii') and args.from_nii:
-
-        print("Please pass in an nii file")
-        
-        exit()
+            print("Please pass in an nii file")
+            
+            exit()
 
     # Make a copy in tmp for use in the pipeline
-    os.mkdir("/tmp/mripredict/")
+    os.makedirs("/tmp/mripredict/", exist_ok=True)
 
-    tmp_path = os.path.join("/tmp/mripredict/", filename)
+    if args.from_nii != '':
 
-    shutil.copy(args.file_path, tmp_path)
+        filename = os.path.basename(args.from_nii)
 
-    if args.from_nii:
+        tmp_path = os.path.join("/tmp/mripredict/", filename)
+
+        shutil.copy(args.from_nii, tmp_path)
 
         # Run fastsurfer on file
-        process_file("/tmp/mripredict/", filename, args.license_path, 4, tesla3=False)
+        run_fastsurfer("/tmp/mripredict/", filename, args.license_path, 4)
 
         subject = Subject("/tmp/mripredict", None)
     
     else:
 
+        dirname = os.path.join(os.path.dirname(__file__), "mri_samples/fastsurfer_sample")
+
+        tmp_path = os.path.join("/tmp/mripredict/", "fastsurfer_sample")
+
+        shutil.copytree(dirname, tmp_path, dirs_exist_ok=True)
+
         # Process the subject
-        subject = Subject(os.path.join(os.path.dirname(__file__), "fastsurfer_sample"), None)
+        subject = Subject(tmp_path, None)
 
     subject_data = process_single_subject(subject)
 
     # Read in neurocognitive test scores
-    if input("Does the subject have test scores? (y/n): ") == 'y':
-        
-        subject_data['scores'], subject_data['score_names'] = get_scores()
+    get_scores(subject_data)
+
+    # Get individual predictions and explainability
+    print("Running inference on hippocampus pointcloud \n")
+    pointnet_pred_class, pointnet_output, attributions = get_pointnet_prediction(subject_data['lhcampus_pointcloud_aligned'], 'cpu')
+
+    print("Running inference on brain parcellation volumes \n")
+    volumes_pred_class, volumes_output, shap_values = get_volumes_prediction(subject_data['volumes'], subject_data['struct_names'])
+
+    # Get ensemble predictions
+    if subject_data['scores'] is not None:
+
+        print("Running inference on test scores \n")
+        scores_pred_class, scores_output = get_scores_prediction()
+
+        print("Calculating ensemble prediction \n")
+        prediction = get_ensemble_prediction_avg(pointnet_output, volumes_output, scores_output, scores=True)
 
     else:
 
-        subject_data['scores'], subject_data['score_names'] = None, None
+        print("Calculating ensemble prediction \n")
+        prediction = get_ensemble_prediction_avg(pointnet_output, volumes_output, None, scores=False)
 
-    subject.subject_data = subject_data
+    #vis_attributions(attributions, subject_data['lhcampus_pointcloud_aligned']).show()
 
-    print(get_ensemble_prediction_avg(subject.subject_data))
+    shap.plots.bar(shap_values, max_display=10)
 
-    #shutil.rmtree("/tmp/mripredict/")
+    print(shap_values)
+
+    vis_volumes(subject, shap_values)
+
+    print(prediction)
+
+    shutil.rmtree("/tmp/mripredict/")

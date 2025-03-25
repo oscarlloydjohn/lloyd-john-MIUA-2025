@@ -19,25 +19,9 @@ from ozzy_torch_utils.plot import *
 from ozzy_torch_utils.train_nn import *
 from ozzy_torch_utils.model_parameters import *
 from ozzy_torch_utils.init_dataloaders import *
-
-from explain_pointnet import get_prediction
-
-# Set seed for NN as it seems to behave differently each time
-def set_seed(seed):
-
-    random.seed(seed)
-
-    np.random.seed(seed)
-
-    torch.manual_seed(seed)
-
-    if torch.cuda.is_available():
-
-        torch.cuda.manual_seed_all(seed)
-
-    torch.backends.cudnn.deterministic = True
-
-    torch.backends.cudnn.benchmark = False
+from .explain_pointnet import *
+from .explain_volumes import *
+from .utils import *
 
 # Use pointnet model to run a prediction on a numpy input, and return a string of the research group along with the output as a numpy array
 def get_pointnet_prediction(input, device, seed=42, mode = 'pth'):
@@ -64,12 +48,14 @@ def get_pointnet_prediction(input, device, seed=42, mode = 'pth'):
 
         model.eval()
 
+        model.to(device)
+
         input = torch.from_numpy(input).type(torch.float32).to(device)
+
+        attributions = explain_pointnet(model, input)
 
         # Add batch dim and transpose to 3 x n for pointnet
         input = input.unsqueeze(0).transpose(2,1)
-
-        model.to(device)
 
         # Get output from model, ignoring extra info from pointnet
         output = model(input)[0]
@@ -81,24 +67,17 @@ def get_pointnet_prediction(input, device, seed=42, mode = 'pth'):
 
         pred_class = int(np.argmax(output.cpu().numpy()))
 
-        mapping = {
-            0: 'CN',
-            1: 'MCI',
-        }
-
-        pred_research_group = mapping.get(pred_class, -1)
-
         output = output.cpu().numpy()
 
         # Get only the positive class as they add up to 1 anyway
         output = output[1]
 
-        return pred_research_group, pred_class, output
+        return pred_class, output, attributions
 
-def get_volumes_prediction(input):
+def get_volumes_prediction(input, struct_names = None):
 
     # Sklearn expects batch dim
-    input = [input]
+    input = np.expand_dims(input, axis=0)
 
     with open(os.path.join(os.path.dirname(__file__), "volumes_gbdt.pkl"), 'rb') as file:
     
@@ -106,20 +85,15 @@ def get_volumes_prediction(input):
 
     output = model.predict_proba(input).squeeze(0)[1]
 
-    pred_class = int(model.predict(input))
+    pred_class = (output >= 0.5).astype(int)
 
-    mapping = {
-            0: 'CN',
-            1: 'MCI',
-        }
+    shap_values = explain_volumes(model, input, struct_names)
 
-    pred_research_group = mapping.get(pred_class, -1)
-
-    return pred_research_group, pred_class, output
+    return pred_class, output, shap_values
 
 def get_scores_prediction(input):
 
-    input = [input]
+    input = np.expand_dims(input, axis=0)
 
     with open(os.path.join(os.path.dirname(__file__), "scores_gbdt.pkl"), 'rb') as file:
     
@@ -127,26 +101,13 @@ def get_scores_prediction(input):
 
     output = model.predict_proba(input).squeeze(0)[1]
 
-    pred_class = int(model.predict(input))
+    pred_class = (output >= 0.5).astype(int)
 
-    mapping = {
-            0: 'CN',
-            1: 'MCI',
-        }
+    return pred_class, output
 
-    pred_research_group = mapping.get(pred_class, -1)
+def get_ensemble_prediction_avg(pointnet_output, volumes_output, scores_output, scores=True):
 
-    return pred_research_group, pred_class, output
-
-def get_ensemble_prediction_avg(subject_data):
-
-    _, _, pointnet_output = get_pointnet_prediction(subject_data['lhcampus_pointcloud_aligned'], 'cpu')
-
-    _, _, volumes_output = get_volumes_prediction(subject_data['volumes'])
-
-    if subject_data['scores'] is not None:
-        
-        _, _, scores_output = get_scores_prediction(subject_data['scores'])
+    if scores:
 
         average = (pointnet_output + volumes_output + scores_output)/3
     
@@ -156,14 +117,7 @@ def get_ensemble_prediction_avg(subject_data):
 
     pred_class = round(average)
 
-    mapping = {
-        0: 'CN',
-        1: 'MCI',
-    }
-
-    pred_research_group = mapping.get(pred_class, -1)
-
-    return pred_research_group, pred_class, average
+    return pred_class, average
 
 '''# Max probability rule (Lassila et. al)
 # Need to verify this is correct
@@ -194,6 +148,7 @@ def get_ensemble_prediction_maxprob(subject_data):
     return best_pred[0], best_pred[1], best_pred[2], best_index'''
 
 # Should it be max for only the positive class or for both classes?
+# Needs refactor
 def get_ensemble_prediction_maxprob(subject_data):
 
     pointnet_pred = get_pointnet_prediction(subject_data['lhcampus_pointcloud_aligned'], 'cpu')
