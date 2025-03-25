@@ -28,7 +28,7 @@ if command -v docker &> /dev/null; then
 # Check if Singularity is installed
 elif command -v singularity &> /dev/null; then
     echo "Building Singularity image from definition file..."
-    singularity build --arch $MACHINE_TYPE $IMAGE_NAME.sif $SINGULARITY_DEF_PATH
+    singularity build $IMAGE_NAME.sif $SINGULARITY_DEF_PATH
     echo "Running Singularity without GPU support"
     singularity run -B $HOST_DIR:$CONTAINER_DIR $IMAGE_NAME.sif
 else
