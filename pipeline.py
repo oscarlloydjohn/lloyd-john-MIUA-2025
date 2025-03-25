@@ -6,7 +6,7 @@ from preprocessing_post_fastsurfer.subject import *
 from preprocessing_post_fastsurfer.alignment import *
 from preprocessing_post_fastsurfer.cropping import *
 from preprocessing_post_fastsurfer.mesh_creation import *
-from ensemble.combined_models import *
+from final_models.combined_models import *
 
 def process_single_subject(subject: Subject):
 
