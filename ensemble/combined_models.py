@@ -42,7 +42,7 @@ def set_seed(seed):
 # Use pointnet model to run a prediction on a numpy input, and return a string of the research group along with the output as a numpy array
 def get_pointnet_prediction(input, device, seed=42, mode = 'pth'):
 
-    # set_seed(seed)
+    set_seed(seed)
 
     with torch.no_grad():
 
