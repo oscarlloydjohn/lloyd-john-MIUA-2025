@@ -7,36 +7,30 @@ SINGULARITY_DEF_PATH="$PIPELINE_DIR/pipeline.def"
 HOST_DIR="$PIPELINE_DIR"
 CONTAINER_DIR="/app"
 
-# Check if nvidia-smi is available to determine GPU presence
-if command -v nvidia-smi &> /dev/null; then
-    GPU_SUPPORT=true
+# Detect the platform
+MACHINE_TYPE=$(uname -m)
+if [ "$MACHINE_TYPE" == "x86_64" ]; then
+    PLATFORM="linux/amd64"
+elif [ "$MACHINE_TYPE" == "aarch64" ] || [ "$MACHINE_TYPE" == "arm64" ]; then
+    PLATFORM="linux/arm64"
 else
-    GPU_SUPPORT=false
+    echo "Unsupported platform: $MACHINE_TYPE"
+    exit 1
 fi
 
 # Check if Docker is installed
 if command -v docker &> /dev/null; then
     echo "Building Docker image..."
-    docker build -t $IMAGE_NAME -f $DOCKERFILE_PATH .
-    if [ "$GPU_SUPPORT" = true ]; then
-        echo "Running Docker with GPU support"
-        docker run --gpus all -v $HOST_DIR:$CONTAINER_DIR -it $IMAGE_NAME
-    else
-        echo "Running Docker without GPU support"
-        docker run -v $HOST_DIR:$CONTAINER_DIR -it $IMAGE_NAME
-    fi
+    docker build --platform $PLATFORM -t $IMAGE_NAME -f $DOCKERFILE_PATH .
+    echo "Running Docker without GPU support"
+    docker run --platform $PLATFORM -v $HOST_DIR:$CONTAINER_DIR -it $IMAGE_NAME
 # Check if Singularity is installed and Docker is not available
 elif command -v singularity &> /dev/null; then
     echo "Building Singularity image from Dockerfile..."
-    docker build -t $IMAGE_NAME -f $DOCKERFILE_PATH .
+    docker build --platform $PLATFORM -t $IMAGE_NAME -f $DOCKERFILE_PATH .
     singularity build $IMAGE_NAME.sif $SINGULARITY_DEF_PATH
-    if [ "$GPU_SUPPORT" = true ]; then
-        echo "Running Singularity with GPU support"
-        singularity run --nv -B $HOST_DIR:$CONTAINER_DIR $IMAGE_NAME.sif
-    else
-        echo "Running Singularity without GPU support"
-        singularity run -B $HOST_DIR:$CONTAINER_DIR $IMAGE_NAME.sif
-    fi
+    echo "Running Singularity without GPU support"
+    singularity run -B $HOST_DIR:$CONTAINER_DIR $IMAGE_NAME.sif
 else
     echo "Cannot run, no docker or singularity found"
     exit 1

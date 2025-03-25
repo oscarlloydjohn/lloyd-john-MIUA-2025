@@ -2,7 +2,7 @@
 import shutil
 
 # Custom modules
-from preprocessing_pre_fastsufer.preprocess import *
+from preprocess import *
 from preprocessing_post_fastsurfer.subject import *
 from preprocessing_post_fastsurfer.alignment import *
 from preprocessing_post_fastsurfer.cropping import *
@@ -106,7 +106,6 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(description="Script for running a prediction on a single .nii file")
 
-    parser.add_argument('--tesla3', action='store_true')
     parser.add_argument('--file_path', type=str, required=True)
     parser.add_argument('--license_path', type=str, required=True)
 
@@ -127,12 +126,14 @@ if __name__ == "__main__":
         exit()
 
     # Make a copy in tmp for use in the pipeline
+    os.mkdir("/tmp/mripredict/")
+
     tmp_path = os.path.join("/tmp/mripredict/", filename)
 
     shutil.copy(args.file_path, tmp_path)
 
     # Run fastsurfer on file
-    process_file("/tmp/mripredict/", filename, args.license_path, 4, args.tesla3)
+    process_file("/tmp/mripredict/", filename, args.license_path, 4, tesla3=False)
 
     # Process the subject
     subject = Subject(tmp_path, None)
@@ -148,6 +149,6 @@ if __name__ == "__main__":
 
         subject_data['scores'], subject_data['score_names'] = None, None
 
-    get_combined_prediction(subject)
+    #get_combined_prediction(subject)
 
-    shutil.rmtree("/tmp/mripredict/")
+    #shutil.rmtree("/tmp/mripredict/")
