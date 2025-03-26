@@ -3,11 +3,6 @@ import matplotlib.pyplot as plt
 from matplotlib.ticker import MaxNLocator
 from datetime import datetime
 import pickle
-
-# Custom modules
-from preprocessing_post_fastsurfer.subject import *
-from preprocessing_post_fastsurfer.vis import *
-from .split_dataset import *
 from .subject_dataset import *
 from .model_parameters import *
 

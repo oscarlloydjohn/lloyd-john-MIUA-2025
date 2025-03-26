@@ -3,6 +3,7 @@ import pyvista as pv
 from random import sample
 import shap
 from matplotlib.colors import ListedColormap
+from pyvistaqt import BackgroundPlotter
 
 # Custom modules
 from preprocessing_post_fastsurfer.extraction import *
@@ -36,9 +37,9 @@ def vis_volumes(subject, shap_values):
 
     top_volumes = np.argsort(np.abs(shap_values))[::-1][:5]
 
-    pl = pv.Plotter()
+    plotter = BackgroundPlotter()
 
-    pl.add_volume(np.asarray(image_array), cmap="bone", opacity="sigmoid_8", show_scalar_bar=False)
+    plotter.add_volume(np.asarray(image_array), cmap="bone", opacity="sigmoid_8", show_scalar_bar=False)
 
     for volume in top_volumes:
 
@@ -56,6 +57,8 @@ def vis_volumes(subject, shap_values):
         else:
             cmap = ListedColormap(['red'])
 
-        pl.add_volume(extracted_region, cmap=cmap, opacity="foreground", show_scalar_bar=False, shade=True)
+        plotter.add_volume(extracted_region, cmap=cmap, opacity="foreground", show_scalar_bar=False, shade=True)
+        
+    plotter.set_background("black")
 
-    return pl
+    return plotter

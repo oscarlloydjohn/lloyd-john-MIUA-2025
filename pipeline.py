@@ -1,10 +1,12 @@
 import shutil
 import shap
+import argparse
 
 # Custom modules
 from final_models_explainability.get_predictions import *
 from pipeline_utils.image_processing import *
 from pipeline_utils.get_scores import *
+from pipeline_utils.frontend import *
 
 # THIS WHOLE FILE NEEDS TO RUN IN A DOCKER CONTAINER FOR FROM_NII
 if __name__ == "__main__":
@@ -76,11 +78,14 @@ if __name__ == "__main__":
         print("Calculating ensemble prediction \n")
         prediction = get_ensemble_prediction_avg(pointnet_output, volumes_output, None, scores=False)
 
-    vis_attributions(attributions, subject_data['lhcampus_pointcloud_aligned']).show()
+    
+    hcampus_plotter = vis_attributions(attributions, subject_data['lhcampus_pointcloud_aligned'])
 
-    shap.plots.bar(shap_values, max_display=10)
+    volumes_plotter = vis_volumes(subject, shap_values)
 
-    vis_volumes(subject, shap_values).show()
+    print("Opening main window \n")
+
+    show_main_window(prediction, hcampus_plotter, volumes_plotter, shap_values)
 
     print(prediction)
 

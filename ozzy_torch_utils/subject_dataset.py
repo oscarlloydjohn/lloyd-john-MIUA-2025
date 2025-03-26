@@ -1,21 +1,11 @@
-
-# Torch
 import torch
 from torch.utils.data import Dataset
-import torch
-from torcheval.metrics import *
-
-# Other
 import nibabel
 import os
 import numpy as np
 import random
 from tqdm import tqdm
-from concurrent.futures import ProcessPoolExecutor
-
-# Custom modules
 from preprocessing_post_fastsurfer.subject import *
-from preprocessing_post_fastsurfer.vis import *
 
 """
 

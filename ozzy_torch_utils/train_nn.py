@@ -1,19 +1,9 @@
-# Torch
-import torch
 import torch
 from torcheval.metrics import *
 from torch.utils.data import DataLoader
-
-# Other
 from tqdm import tqdm
 from datetime import datetime
 from sklearn.metrics import roc_curve, roc_auc_score
-
-# Custom modules
-from preprocessing_post_fastsurfer.subject import *
-from preprocessing_post_fastsurfer.vis import *
-from .split_dataset import *
-from .subject_dataset import *
 from .model_parameters import *
 
 """

@@ -1,8 +1,4 @@
-# Torch
-from torch.utils.data import random_split, Subset
-from torch.utils.data import Dataset
-import random
-import numpy as np
+from torch.utils.data import random_split, Subset, Dataset
 
 """
 

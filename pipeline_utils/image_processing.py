@@ -1,4 +1,6 @@
 import subprocess
+import multiprocessing
+import contextlib
 
 # Custom modules
 from preprocessing_post_fastsurfer.subject import *
@@ -15,14 +17,15 @@ def process_single_subject(subject: Subject):
 
     # Align the MRI
     print("Aligning subject brain with template brain \n")
-    _ = alignment(subject, reference_brain_array)
+    alignment(subject, reference_brain_array)
 
     # Align the aparc
-    _ = aux_alignment(subject, subject.aparc, is_aparc=True)
+    print("Aligning parcellation file \n")
+    aux_alignment(subject, subject.aparc, is_aparc=True)
 
     # Extract the aligned left hippocampus
     print("Aligning left hippocampus \n")
-    _ = extract_region(subject, [17], subject.brain_aligned, subject.aparc_aligned, is_aligned=True)
+    extract_region(subject, [17], subject.brain_aligned, subject.aparc_aligned, is_aligned=True)
 
     # Get the bounding box of the hippocampus
     print("Cropping hippocampus \n")
@@ -31,7 +34,7 @@ def process_single_subject(subject: Subject):
     bbox = bounding_box(hcampus_image_array)
 
     # Crop the left hippocampus
-    _ = crop(subject, "Left-Hippocampus_aligned.nii", bbox)
+    crop(subject, "Left-Hippocampus_aligned.nii", bbox)
 
     # Convert the left hippocampus to mesh
     print("Converting hippocampus volume to mesh \n")

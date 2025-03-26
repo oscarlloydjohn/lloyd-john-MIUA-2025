@@ -1,29 +1,9 @@
-# Torch
 import torch
-import torch.optim as optim
-from torcheval.metrics import *
-
-# Benny pointnet
-from pointnet2_benny import pointnet2_cls_msg
-import cnn3d_xmuyzz.ResNetV2
-
-import dill as pickle
-import shap
 from captum.attr import *
 import pyvista as pv
-from matplotlib.colors import Normalize
-from random import sample
 from matplotlib.colors import LinearSegmentedColormap
-
-# Custom modules
-from preprocessing_post_fastsurfer.subject import *
-from preprocessing_post_fastsurfer.vis import *
-from ozzy_torch_utils.split_dataset import *
-from ozzy_torch_utils.subject_dataset import *
-from ozzy_torch_utils.plot import *
-from ozzy_torch_utils.train_nn import *
-from ozzy_torch_utils.model_parameters import *
-from ozzy_torch_utils.init_dataloaders import *
+import numpy as np
+from pyvistaqt import BackgroundPlotter
 
 def explain_pointnet(model, input):
 
@@ -75,7 +55,7 @@ def vis_attributions(attributions: np.ndarray, cloud: np.ndarray, power: float =
 
     pv_cloud = pv.PolyData(cloud)
 
-    plotter = pv.Plotter()
+    plotter = BackgroundPlotter()
 
     plotter.add_points(pv_cloud, scalars=norm_xyz_sum, cmap=custom_cmap, clim= [0,1])
 
