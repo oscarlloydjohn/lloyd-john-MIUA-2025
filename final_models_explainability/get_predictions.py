@@ -6,27 +6,13 @@ from .explain_volumes import *
 from .utils import *
 
 # Use pointnet model to run a prediction on a numpy input, and return a string of the research group along with the output as a numpy array
-def get_pointnet_prediction(input, device, seed=42, mode = 'pth'):
-
-    set_seed(seed)
+def get_pointnet_prediction(input, device):
 
     with torch.no_grad():
 
-        if mode == 'pth':
+        model = pointnet2_cls_ssg.get_model(2, normal_channel=False)
 
-            model = pointnet2_cls_ssg.get_model(2, normal_channel=False)
-
-            model.load_state_dict(torch.load(os.path.join(os.path.dirname(__file__), "pointnet.pth"), weights_only=True))
-
-        if mode == 'pkl':
-
-            pkl_path = "/uolstore/home/student_lnxhome01/sc22olj/Compsci/year3/individual-project-COMP3931/individual-project-sc22olj/runs/run_21-03-2025_15-28-42/run_21-03-2025_15-28-42_params.pkl"
-
-            with open(pkl_path, 'rb') as file:
-        
-                params = pickle.load(file)
-
-            model = params.model
+        model.load_state_dict(torch.load(os.path.join(os.path.dirname(__file__), "pointnet.pth"), weights_only=True))
 
         model.eval()
 
