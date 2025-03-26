@@ -17,7 +17,7 @@ This module provides a function that trains a neural network classifier using th
 
 """
 
-def train_nn(model_parameters: ModelParameters, train_dataloader: DataLoader, test_dataloader: DataLoader, device: torch.device) -> tuple[dict, torch.nn.Module]:
+def train_nn(model_parameters: ModelParameters, train_dataloader: DataLoader, test_dataloader: DataLoader, device: torch.device, train_only: bool = False, scheduler_start: int = 0) -> tuple[dict, torch.nn.Module]:
     
     """
 
@@ -97,6 +97,19 @@ def train_nn(model_parameters: ModelParameters, train_dataloader: DataLoader, te
             
             # Multiply loss by batch size to account for differences in batch size (e.g last batch)
             running_training_loss += loss.item() * inputs.size(0)
+
+        # If the instance has a scheduler added
+        if hasattr(model_parameters, 'scheduler'):
+
+            if epoch >= scheduler_start:
+
+                model_parameters.scheduler.step()
+
+        metrics['training_losses'].append(running_training_loss/len(train_dataloader))
+
+        if train_only:
+
+            continue
         
         # Validation loop
         model_parameters.model.eval()
@@ -147,8 +160,6 @@ def train_nn(model_parameters: ModelParameters, train_dataloader: DataLoader, te
         metrics['roc_curves'].append(roc_curve(epoch_labels.cpu(), epoch_pred_probs[:, 1].cpu(), pos_label=1, drop_intermediate=False))
         
         metrics['roc_aucs'].append(roc_auc_score(epoch_labels.cpu(), epoch_pred_probs[:, 1].cpu()))
-        
-        metrics['training_losses'].append(running_training_loss/len(train_dataloader))
             
         metrics['validation_losses'].append(running_validation_loss/len(test_dataloader))
         
@@ -172,6 +183,11 @@ def train_nn(model_parameters: ModelParameters, train_dataloader: DataLoader, te
             print("Break before nightly restart")
             
             break
+        
+    # For final model production
+    if train_only:
+
+        return metrics['training_losses'], model_parameters.model
         
     metrics['train_time'] = end_time - start_time
 
