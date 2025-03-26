@@ -7,31 +7,13 @@ SINGULARITY_DEF_PATH="$PIPELINE_DIR/pipeline.def"
 HOST_DIR="$PIPELINE_DIR"
 CONTAINER_DIR="/app"
 
-# Detect the platform
-MACHINE_TYPE=$(uname -m)
-if [ "$MACHINE_TYPE" == "x86_64" ]; then
-    PLATFORM="linux/amd64"
-elif [ "$MACHINE_TYPE" == "aarch64" ] || [ "$MACHINE_TYPE" == "arm64" ]; then
-    PLATFORM="linux/arm64"
-else
-    echo "Unsupported platform: $MACHINE_TYPE"
-    exit 1
-fi
-
 # Check if Docker is installed
 if command -v docker &> /dev/null; then
     echo "Building Docker image..."
-    docker buildx create --use
-    docker buildx build --platform $PLATFORM -t $IMAGE_NAME -f $DOCKERFILE_PATH --load .
-    echo "Running Docker without GPU support"
-    docker run --platform $PLATFORM -v $HOST_DIR:$CONTAINER_DIR -it $IMAGE_NAME
-# Check if Singularity is installed
-elif command -v singularity &> /dev/null; then
-    echo "Building Singularity image from definition file..."
-    singularity build $IMAGE_NAME.sif $SINGULARITY_DEF_PATH
-    echo "Running Singularity without GPU support"
-    singularity run -B $HOST_DIR:$CONTAINER_DIR $IMAGE_NAME.sif
+    docker build -t $IMAGE_NAME -f $DOCKERFILE_PATH --load .
+    echo "Running pipeline in Docker..."
+    docker run -v $HOST_DIR:$CONTAINER_DIR -it $IMAGE_NAME
 else
-    echo "Cannot run, no docker or singularity found"
+    echo "Cannot run, no docker found"
     exit 1
 fi

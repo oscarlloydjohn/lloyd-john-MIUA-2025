@@ -1,6 +1,4 @@
 import subprocess
-import multiprocessing
-import contextlib
 
 # Custom modules
 from preprocessing_post_fastsurfer.subject import *
