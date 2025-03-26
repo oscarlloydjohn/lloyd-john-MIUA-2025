@@ -68,7 +68,7 @@ if __name__ == "__main__":
     if subject_data['scores'] is not None:
 
         print("Running inference on test scores \n")
-        scores_pred_class, scores_output = get_scores_prediction()
+        scores_pred_class, scores_output = get_scores_prediction(subject_data['scores'])
 
         print("Calculating ensemble prediction \n")
         prediction = get_ensemble_prediction_avg(pointnet_output, volumes_output, scores_output, scores=True)

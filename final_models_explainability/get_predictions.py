@@ -1,5 +1,5 @@
 import torch
-from pointnet2_benny import pointnet2_cls_ssg
+from pointnet2_benny import pointnet2_cls_msg
 import pickle
 from .explain_pointnet import *
 from .explain_volumes import *
@@ -10,7 +10,7 @@ def get_pointnet_prediction(input, device):
 
     with torch.no_grad():
 
-        model = pointnet2_cls_ssg.get_model(2, normal_channel=False)
+        model = pointnet2_cls_msg.get_model(2, normal_channel=False)
 
         model.load_state_dict(torch.load(os.path.join(os.path.dirname(__file__), "pointnet.pth"), weights_only=True))
 
