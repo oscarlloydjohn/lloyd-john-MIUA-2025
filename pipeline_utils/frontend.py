@@ -58,7 +58,6 @@ class MainWindow(QMainWindow):
         shap_canvas.figure.tight_layout()
         shap_canvas.draw()
 
-
 def show_main_window(prediction, hippocampus_plotter, volumes_plotter, shap_values):
 
     app = QApplication(sys.argv)
