@@ -1,3 +1,12 @@
+"""
+Explain pointnet
+===========
+
+This module provides a functions for explaining a pointnet classification and visualising the attributions
+
+:author: Oscar Lloyd-John
+"""
+
 import torch
 from captum.attr import *
 import pyvista as pv
@@ -5,7 +14,22 @@ from matplotlib.colors import LinearSegmentedColormap
 import numpy as np
 from pyvistaqt import BackgroundPlotter
 
-def explain_pointnet(model, input):
+def explain_pointnet(model: torch.nn.Module, input: torch.Tensor) -> np.ndarray:
+    """
+    Explain an individual classification on a sample by a pointnet model (local explanation) by attributing the output to the input features using integrated gradients
+
+    Transposes the input before attributing as pointnet expects input in the form n x 3. Note that transposing after attribution does not give proper explanations as the attributions will be for dimensions rather than points.
+
+    Note that attributions are always relative to the positive class
+    
+    :param model: The pointnet model to explain 
+    :type model: torch.nn.Module
+    :param input: The input to the model
+    :type input: torch.Tensor
+    :return: The attributions of the input features, the same shape as the input
+    :rtype: np.ndarray
+
+    """
 
     # Wrap model as pointnet_cls outputs a tuple for some reason
     wrapped_model = lambda x: model(x)[0]
@@ -28,8 +52,22 @@ def explain_pointnet(model, input):
     
     return attributions
 
-def vis_attributions(attributions: np.ndarray, cloud: np.ndarray, power: float = 0.25) -> None:
-    
+def vis_attributions(attributions: np.ndarray, cloud: np.ndarray, power: float = 0.25) -> BackgroundPlotter:
+
+    """
+
+    Visualise the attributions returned by explain_pointnet. Given this is an n x 3 array of attributions, the attributions are summed for each point and then normalised to a value between 0 and 1. These values are then visualised as a point cloud with a custom colour map, where 0 attributions are white, positive attributions are red and negative attributions are blue.
+
+    :param attributions: The pointnet attributions to visualise
+    :type attributions: np.ndarray
+    :param cloud: The point cloud to visualise the attributions on, make sure this is the same point cloud that was used to generate the attributions
+    :type cloud: np.ndarray
+    :param power: The power to raise the sum of the attributions to before normalising, this can be used to increase the contrast of the attributions, defaults to 0.25
+    :type power: float, optional
+    :return: The plotter object used to visualise the attributions
+    :rtype: BackgroundPlotter
+    """
+
     # Sum x, y and z values for an overall attribution for that point
     xyz_sum = np.sum(attributions, axis=1)
 

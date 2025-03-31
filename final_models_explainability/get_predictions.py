@@ -1,3 +1,12 @@
+"""
+Get predictions
+===========
+
+Has functions for getting predictions from individual models and also from ensemble. All models take numpy inputs and return numpy outputs. Some functions also return explainability information
+
+:author: Oscar Lloyd-John
+"""
+
 import torch
 from pointnet2_benny import pointnet2_cls_msg
 import pickle
@@ -6,7 +15,17 @@ from .explain_volumes import *
 from .utils import *
 
 # Use pointnet model to run a prediction on a numpy input, and return a string of the research group along with the output as a numpy array
-def get_pointnet_prediction(input, device):
+def get_pointnet_prediction(input: np.ndarray, device: str) -> tuple:
+    """
+    Get a prediction from the hippocampus pointnet model for a given input. Takes the input as a numpy array and returns the prediction as a numpy array and the research group as a string. Also returns the attributions of the input features, which can be visualised using the vis_attributions function.
+
+    :param input: The input to the model
+    :type input: np.ndarray
+    :param device: The device to run the model on, for the pipeline this would be cpu
+    :type device: str
+    :return: The class prediction of the model, the probability output of the model, and the attributions of the input features
+    :rtype: tuple
+    """
 
     with torch.no_grad():
 
@@ -42,7 +61,20 @@ def get_pointnet_prediction(input, device):
 
         return pred_class, output, attributions
 
-def get_volumes_prediction(input, struct_names = None):
+def get_volumes_prediction(input: np.ndarray, struct_names: list = None):
+    """
+
+    Get the prediction from the parcellation gradient boosted tree model for a given input. Takes the input as a numpy array and returns the prediction as a numpy array. Also returns the shap values of the input features, which can be visualised using the vis_volumes function or using one of shap's built in plotting methods.
+
+    Note that this is designed to work with the specific normalisation steps in the pipeline. It expects a specific number of regions and a specific order of regions. If the input is not in the correct format, the model will not work as expected.
+
+    :param input: The normalised parcellation volumes input to the model, this is a 1d array of shape (n_structures,)
+    :type input: np.ndarray
+    :param struct_names: A list of names of the parcellation regions, passed to shap. This will allow regions to be named in the shap plots. If not provided, the regions will be named by their index.
+    :type struct_names: list, optional
+    :return: The class prediction of the model, the probability output of the model, and the shap values of the input features
+    :rtype: _type_
+    """
 
     # Sklearn expects batch dim
     input = np.expand_dims(input, axis=0)

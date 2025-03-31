@@ -6,6 +6,16 @@ from pyvistaqt import QtInteractor
 import shap
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 import matplotlib.pyplot as plt
+import pyvista
+
+"""
+Frontend
+===========
+
+This module provides a simple PyQt GUI for the pipline
+
+:author: Oscar Lloyd-John
+"""
 
 class MainWindow(QMainWindow):
     def __init__(self, prediction, hippocampus_plotter, volumes_plotter, shap_values):
@@ -58,7 +68,21 @@ class MainWindow(QMainWindow):
         shap_canvas.figure.tight_layout()
         shap_canvas.draw()
 
-def show_main_window(prediction, hippocampus_plotter, volumes_plotter, shap_values):
+def show_main_window(prediction: tuple, hippocampus_plotter: pyvista.BackgroundPlotter, volumes_plotter: pyvista.BackgroundPlotter, shap_values: shap.Explanation):
+
+    """
+
+    Show the main window of the pipeline
+
+    :param prediction: The prediction of the pipeline
+    :type prediction: tuple
+    :param hippocampus_plotter: The plotter for the hippocampus
+    :type hippocampus_plotter: pyvista.BackgroundPlotter
+    :param volumes_plotter: The plotter for the brain regions
+    :type volumes_plotter: pyvista.BackgroundPlotter
+    :param shap_values: The shap values for the brain regions
+    :type shap_values: shap.Explanation
+    """
 
     app = QApplication(sys.argv)
 

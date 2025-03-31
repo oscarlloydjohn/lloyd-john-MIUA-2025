@@ -6,4 +6,5 @@ __pycache__/
 /scratch-disk
 .ipynb_checkpoints
 .venv
+.pipelinevenv
 /temp-py

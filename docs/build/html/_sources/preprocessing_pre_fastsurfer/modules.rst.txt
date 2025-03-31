@@ -1,0 +1,12 @@
+preprocessing_pre_fastsufer
+===========================
+
+.. toctree::
+   :maxdepth: 4
+
+   compact_dir
+   create_holdout
+   delete_files_called
+   delete_files_containing
+   isolate_adni_screening
+   preprocess

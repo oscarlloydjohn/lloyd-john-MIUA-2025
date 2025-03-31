@@ -1,16 +1,37 @@
+"""
+Explain pointnet
+===========
+
+This module provides a functions for explaining a pointnet classification and visualising the attributions
+
+:author: Oscar Lloyd-John
+"""
+
 import numpy as np
 import pyvista as pv
 from random import sample
 import shap
 from matplotlib.colors import ListedColormap
 from pyvistaqt import BackgroundPlotter
+import sklearn
 
 # Custom modules
 from preprocessing_post_fastsurfer.extraction import *
 from preprocessing_post_fastsurfer.subject import *
 
-def explain_volumes(model, volumes, struct_names):
+def explain_volumes(model: sklearn.ensemble.GradientBoostingClassifier, volumes: np.ndarray, struct_names: list) -> shap.Explainer:
+    """
+    Explain an individual classification on a sample by the parcellation volumes gradient boosted classifier. 
 
+    :param model: The gradient boosted classifier model to explain (parcellation volumes model)
+    :type model: sklearn.ensemble.GradientBoostingClassifier
+    :param volumes: Single sample of parcellation volumes to explain
+    :type volumes: np.ndarray
+    :param struct_names: Names of the structures in the volumes
+    :type struct_names: list
+    :return: The shap values of the volumes
+    :rtype: shap.Explainer
+    """
     volumes = volumes.squeeze(0)
 
     explainer = shap.Explainer(model, feature_names=struct_names)
@@ -23,7 +44,17 @@ import numpy as np
 import nibabel
 import pyvista as pv
 
-def vis_volumes(subject, shap_values):
+def vis_volumes(subject: Subject, shap_values: shap.Explainer) -> BackgroundPlotter:
+    """
+    Visualise the shap values of the parcellation volumes for a single sample. The top 5 volumes are visualised in the actual subject's brain volume, with the volumes coloured by the shap value.
+
+    :param subject: The subject to visualise the volumes on
+    :type subject: Subject
+    :param shap_values: The shap values of the volumes
+    :type shap_values: shap.Explainer
+    :return: The plotter with the volumes visualised
+    :rtype: BackgroundPlotter
+    """
 
     brain = subject.brain_aligned
     aparc = subject.aparc_aligned

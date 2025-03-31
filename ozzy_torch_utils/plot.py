@@ -12,7 +12,7 @@ from .model_parameters import *
 Plot
 ===========
 
-This function provides a way to plot and store the results of a model training. 
+This module provides a way to plot and store the results of a model training. 
 
 :author: Oscar Lloyd-John
 

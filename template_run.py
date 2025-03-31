@@ -1,3 +1,14 @@
+"""
+
+Template run
+===========
+
+This is an example template of how to use the functions provided in ozzy_torch_utils
+
+:author: Oscar Lloyd-John
+
+"""
+
 '''
 IMPORTS
 '''

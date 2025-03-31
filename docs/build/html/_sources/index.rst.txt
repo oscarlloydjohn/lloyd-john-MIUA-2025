@@ -1,0 +1,22 @@
+.. Final project sc22olj documentation master file, created by
+   sphinx-quickstart on Thu Mar 27 11:56:47 2025.
+   You can adapt this file completely to your liking, but it should at least
+   contain the root `toctree` directive.
+
+Welcome to Final project sc22olj's documentation!
+=================================================
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Contents:
+
+* :ref:`genindex`
+* :ref:`modindex`
+* :ref:`search`
+
+Packages
+==================
+
+.. toctree::
+
+   preprocessing_pre_fastsurfer/ 

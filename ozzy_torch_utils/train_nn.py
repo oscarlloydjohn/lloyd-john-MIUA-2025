@@ -21,7 +21,7 @@ def train_nn(model_parameters: ModelParameters, train_dataloader: DataLoader, te
     
     """
 
-    Trains a neural network using the given model parameters and dataset. The function returns a dictionary of metrics for each epoch and the trained model.
+    Trains a neural network using the given model parameters and dataset. The function returns a dictionary of metrics for each epoch and the trained model. Also can train a model without evaluation i.e for a production model to be created. 
 
     :param model_parameters: The model parameters to be used for training
     :type model_parameters: ModelParameters
@@ -31,6 +31,10 @@ def train_nn(model_parameters: ModelParameters, train_dataloader: DataLoader, te
     :type test_dataloader: DataLoader
     :param device: The device to train the model on
     :type device: torch.device
+    :param train_only: If True, the function will train the model without evaluating it (meaning it only uses one dataset). Returns the training losses and the trained model
+    :type train_only: bool
+    :param scheduler_start: The epoch to start the scheduler on, if there is one
+    :type scheduler_start: int
     :return: A dictionary of metrics stored as lists where a list contains all metrics of one type over an epoch and the trained model
     :rtype: tuple[dict, torch.nn.Module]
 

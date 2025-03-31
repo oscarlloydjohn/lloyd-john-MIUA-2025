@@ -2,8 +2,13 @@ import torch
 import random
 import numpy as np
 
-# Set seed for NN as it seems to behave differently each time
-def set_seed(seed):
+def set_seed(seed: int) -> None:
+    """
+    Set the seed for reproducibility in torch, numpy and random. Used for testing
+
+    :param seed: The seed
+    :type seed: int
+    """
 
     random.seed(seed)
 

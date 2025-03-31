@@ -6,7 +6,26 @@ from preprocessing_post_fastsurfer.alignment import *
 from preprocessing_post_fastsurfer.cropping import *
 from preprocessing_post_fastsurfer.mesh_creation import *
 
-def process_single_subject(subject: Subject):
+"""
+Image procesing
+===========
+
+This module provides functions processing a single MRI scan for use in the pipeline. It uses functions from preprocessing_post_fastsurfer, and also can run fastsurfer.
+
+:author: Oscar Lloyd-John
+"""
+
+
+def process_single_subject(subject: Subject) -> dict:
+    """
+
+    Process a single subject's MRI scan using preprocessing_post_fastsurfer. Stores the image data in a dict similar to the ozzy_torch_utils dataset, meaning it is in memory.
+
+    :param subject: The Subject object initialised after fastsurfer processing
+    :type subject: Subject
+    :return: A dict containing all the subject data
+    :rtype: dict
+    """
 
     subject_data = {}
 
@@ -66,7 +85,18 @@ def process_single_subject(subject: Subject):
 
     return subject_data
 
-def run_fastsurfer(data_path: os.PathLike[str], filename: str, threads = 4):
+def run_fastsurfer(data_path: os.PathLike[str], filename: str, threads = 4) -> None:
+    """
+
+    Runs fastsurfer, expecting that this code is run inside a container or there is a native install
+
+    :param data_path: The path to the .nii file for fastsurfer to process
+    :type data_path: os.PathLike[str]
+    :param filename: The name of the file (without file ext), processed images will be put into a directory with this name
+    :type filename: str
+    :param threads: The number of threads for fastsurfer to use, defaults to 4
+    :type threads: int, optional
+    """
 
     dirname = os.path.splitext(os.path.basename(filename))[0]
 

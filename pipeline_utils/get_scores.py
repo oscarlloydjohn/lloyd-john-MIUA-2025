@@ -1,6 +1,23 @@
 import numpy as np
 
-def get_scores(subject_data):
+"""
+Image procesing
+===========
+
+This module provides a simple command line interface for inputting neurocognitive test scores as used in the pipeline.
+
+:author: Oscar Lloyd-John
+"""
+
+def get_scores(subject_data: dict) -> dict:
+
+    """_summary_
+
+    :param subject_data: The subject data dictionary to add the scores to (note that this is not a Subject object)
+    :type subject_data: dict
+    :return: The same dictionary with the scores added
+    :rtype: dict
+    """
 
     # Read in neurocognitive test scores
     if input("Does the subject have test scores? (y/n): ") == 'y':
