@@ -16,7 +16,7 @@ This module provides functions for visualising neuroimaging data within python. 
 :author: Oscar Lloyd-John
 """
 
-def display_image(image) -> None:
+def display_image(image, clip: bool = True) -> None:
 
     """
     Display a 2D slice of a 3D image nibabel image. Simply is a wrapper for display_array.
@@ -30,11 +30,11 @@ def display_image(image) -> None:
     # Get image data array from image object
     image_array = np.asarray(image.dataobj)
     
-    display_array(image_array)
+    display_array(image_array, clip=clip)
     
     return 
 
-def display_array(array: np.ndarray) -> None:
+def display_array(array: np.ndarray, clip: bool = True) -> None:
 
     """
     
@@ -48,10 +48,17 @@ def display_array(array: np.ndarray) -> None:
     
     # Get middle slice
     slice = array[array.shape[0] // 2, :, :]
-    
-    # Scale the image such that the maximum pixel value is 255
-    # Display the scaled image
-    display(Image.fromarray(((slice / np.max(slice)) * 255).astype(np.uint8)))
+
+    if clip:
+
+        # Scale the image such that the maximum pixel value is 255
+        display(Image.fromarray(((slice / np.max(slice)) * 255).astype(np.uint8)))
+
+    else:
+
+        img = Image.fromarray(slice.astype(np.uint8))
+
+        display(img)
     
     return 
 
