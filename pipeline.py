@@ -79,7 +79,9 @@ if __name__ == "__main__":
         prediction = get_ensemble_prediction_avg(pointnet_output, volumes_output, None, scores=False)
 
     
-    hcampus_plotter = vis_attributions(attributions, subject_data['lhcampus_pointcloud_aligned'])
+    norm_xyz_sum = normalise_attributions(attributions)
+
+    hcampus_plotter = vis_attributions(norm_xyz_sum, subject_data['lhcampus_pointcloud_aligned'])
 
     volumes_plotter = vis_volumes(subject, shap_values)
 

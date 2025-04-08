@@ -52,20 +52,18 @@ def explain_pointnet(model: torch.nn.Module, input: torch.Tensor) -> np.ndarray:
     
     return attributions
 
-def vis_attributions(attributions: np.ndarray, cloud: np.ndarray, power: float = 0.25) -> BackgroundPlotter:
+def normalise_attributions(attributions: np.ndarray, power: float = 0.25) -> np.ndarray:
 
     """
 
-    Visualise the attributions returned by explain_pointnet. Given this is an n x 3 array of attributions, the attributions are summed for each point and then normalised to a value between 0 and 1. These values are then visualised as a point cloud with a custom colour map, where 0 attributions are white, positive attributions are red and negative attributions are blue.
-
+    Take attributions of shape n x 3 and return a list of attributions for each point. The attributions are summed for each point and then normalised to a value between 0 and 1. 
+    
     :param attributions: The pointnet attributions to visualise
     :type attributions: np.ndarray
-    :param cloud: The point cloud to visualise the attributions on, make sure this is the same point cloud that was used to generate the attributions
-    :type cloud: np.ndarray
     :param power: The power to raise the sum of the attributions to before normalising, this can be used to increase the contrast of the attributions, defaults to 0.25
     :type power: float, optional
-    :return: The plotter object used to visualise the attributions
-    :rtype: BackgroundPlotter
+    :return: A list of point attributions
+    :rtype: np.ndarray
     """
 
     # Sum x, y and z values for an overall attribution for that point
@@ -86,6 +84,22 @@ def vis_attributions(attributions: np.ndarray, cloud: np.ndarray, power: float =
 
 
     norm_xyz_sum = norm(xyz_sum)
+
+    return norm_xyz_sum
+
+def vis_attributions(cloud: np.ndarray, norm_xyz_sum: np.ndarray) -> BackgroundPlotter:
+
+    """
+
+    Visualise the normalised attributions returned by normalise_attributions. These values are then visualised as a point cloud with a custom colour map, where 0 attributions are white, positive attributions are red and negative attributions are blue.
+
+    :param cloud: The point cloud to visualise the attributions on, make sure this is the same point cloud that was used to generate the attributions
+    :type cloud: np.ndarray
+    :param norm_xyz_sum: The normalised attributions
+    :type attributions: np.ndarray
+    :return: The plotter object used to visualise the attributions
+    :rtype: BackgroundPlotter
+    """
 
     # Have to use custom cmap to force the 0 attributions to be white
     colours = [(0, 'blue'), (0.5, 'white'), (1, 'red')]
