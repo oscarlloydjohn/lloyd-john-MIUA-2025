@@ -13,53 +13,6 @@ import pickle
 from .explain_pointnet import *
 from .explain_volumes import *
 from .utils import *
-
-'''# Use pointnet model to run a prediction on a numpy input, and return a string of the research group along with the output as a numpy array
-def get_pointnet_prediction(input: np.ndarray, device: str) -> tuple:
-    """
-    Get a prediction from the hippocampus pointnet model for a given input. Takes the input as a numpy array and returns the prediction as a numpy array and the research group as a string. Also returns the attributions of the input features, which can be visualised using the vis_attributions function.
-
-    :param input: The input to the model
-    :type input: np.ndarray
-    :param device: The device to run the model on, for the pipeline this would be cpu
-    :type device: str
-    :return: The class prediction of the model, the probability output of the model, and the attributions of the input features
-    :rtype: tuple
-    """
-
-    with torch.no_grad():
-
-        model = pointnet2_cls_msg.get_model(2, normal_channel=False)
-
-        model.load_state_dict(torch.load(os.path.join(os.path.dirname(__file__), "pointnet.pth"), weights_only=True))
-
-        model.eval()
-
-        model.to(device)
-
-        input = torch.from_numpy(input).type(torch.float32).to(device)
-
-        attributions = explain_pointnet(model, input)
-
-        # Add batch dim and transpose to 3 x n for pointnet
-        input = input.unsqueeze(0).transpose(2,1)
-
-        # Get output from model, ignoring extra info from pointnet
-        output = model(input)[0]
-
-        output = output.squeeze(0)
-
-        # Take negative logits and get probability
-        output = torch.nn.functional.softmax(output, dim=0)
-
-        pred_class = int(np.argmax(output.cpu().numpy()))
-
-        output = output.cpu().numpy()
-
-        # Get only the positive class as they add up to 1 anyway
-        output = output[1]
-
-        return pred_class, output, attributions'''
     
 def get_pointnet_prediction(input: np.ndarray, device: str) -> tuple:
     """
@@ -75,18 +28,23 @@ def get_pointnet_prediction(input: np.ndarray, device: str) -> tuple:
 
     # Cache model on first call
     if not hasattr(get_pointnet_prediction, "model"):
-        print("Loading PointNet model...")
+
         model = pointnet2_cls_msg.get_model(2, normal_channel=False)
-        model.load_state_dict(
-            torch.load(os.path.join(os.path.dirname(__file__), "pointnet.pth"), weights_only=True)
-        )
+
+        model.load_state_dict(torch.load(os.path.join(os.path.dirname(__file__), "pointnet.pth"), weights_only=True))
+
         model.eval()
+
         model.to(device)
+
         get_pointnet_prediction.model = model
+
     else:
+        
         model = get_pointnet_prediction.model
 
     with torch.no_grad():
+
         input = torch.from_numpy(input).type(torch.float32).to(device)
 
         attributions = explain_pointnet(model, input)
@@ -111,8 +69,8 @@ def get_pointnet_prediction(input: np.ndarray, device: str) -> tuple:
 
         return pred_class, output, attributions
 
+def get_volumes_prediction(input: np.ndarray, struct_names: list = None):
 
-'''def get_volumes_prediction(input: np.ndarray, struct_names: list = None):
     """
 
     Get the prediction from the parcellation gradient boosted tree model for a given input. Takes the input as a numpy array and returns the prediction as a numpy array. Also returns the shap values of the input features, which can be visualised using the vis_volumes function or using one of shap's built in plotting methods.
@@ -124,33 +82,19 @@ def get_pointnet_prediction(input: np.ndarray, device: str) -> tuple:
     :param struct_names: A list of names of the parcellation regions, passed to shap. This will allow regions to be named in the shap plots. If not provided, the regions will be named by their index.
     :type struct_names: list, optional
     :return: The class prediction of the model, the probability output of the model, and the shap values of the input features
-    :rtype: _type_
+    :rtype: tuple
     """
-
-    # Sklearn expects batch dim
-    input = np.expand_dims(input, axis=0)
-
-    with open(os.path.join(os.path.dirname(__file__), "volumes_gbdt.pkl"), 'rb') as file:
-    
-        model = pickle.load(file)
-
-    output = model.predict_proba(input).squeeze(0)[1]
-
-    pred_class = (output >= 0.5).astype(int)
-
-    shap_values = explain_volumes(model, input, struct_names)
-
-    return pred_class, output, shap_values'''
-
-def get_volumes_prediction(input: np.ndarray, struct_names: list = None):
 
     # Add batch dimension for sklearn
     input = np.expand_dims(input, axis=0)
 
     # Load model once and cache
     if not hasattr(get_volumes_prediction, "model"):
+
         print("Loading volumes GBDT model...")
+
         with open(os.path.join(os.path.dirname(__file__), "volumes_gbdt.pkl"), 'rb') as file:
+
             get_volumes_prediction.model = pickle.load(file)
 
     model = get_volumes_prediction.model
@@ -161,32 +105,26 @@ def get_volumes_prediction(input: np.ndarray, struct_names: list = None):
 
     return pred_class, output, shap_values
 
-
-'''def get_scores_prediction(input):
-
-    input = np.expand_dims(input, axis=0)
-
-    with open(os.path.join(os.path.dirname(__file__), "scores_gbdt.pkl"), 'rb') as file:
-    
-        model = pickle.load(file)
-
-    output = model.predict_proba(input).squeeze(0)[1]
-
-    pred_class = (output >= 0.5).astype(int)
-
-    return pred_class, output'''
-
 def get_scores_prediction(input):
     """
-    Get prediction from the scores GBDT model. Input is a 1D numpy array. Returns class prediction and probability.
+
+    Get the prediction from the neurocognitive test scores gradient boosted tree model for a given input. Takes the input as a numpy array and returns the prediction as a numpy array.
+
+    :param input: The neurocognitive test scores, a list of ints as [mmse, gdscale, faq, npiq]
+    :type input: np.ndarray
+    :return: The class prediction of the model and the probability output of the model
+    :rtype: tuple
     """
 
     input = np.expand_dims(input, axis=0)
 
     # Load model once and cache
     if not hasattr(get_scores_prediction, "model"):
+
         print("Loading scores GBDT model...")
+
         with open(os.path.join(os.path.dirname(__file__), "scores_gbdt.pkl"), 'rb') as file:
+
             get_scores_prediction.model = pickle.load(file)
 
     model = get_scores_prediction.model
