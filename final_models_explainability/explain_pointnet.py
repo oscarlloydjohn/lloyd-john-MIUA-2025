@@ -103,6 +103,7 @@ def vis_attributions(cloud: np.ndarray, norm_xyz_sum: np.ndarray) -> BackgroundP
 
     # Have to use custom cmap to force the 0 attributions to be white
     colours = [(0, 'blue'), (0.5, 'white'), (1, 'red')]
+    
     custom_cmap = LinearSegmentedColormap.from_list('custom_cmap', colours)
 
     pv_cloud = pv.PolyData(cloud)
