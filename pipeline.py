@@ -43,6 +43,8 @@ Arguments
 Usage
 -----
 
+**Note, during the pipeline there may be popup windows that show some of the processing steps. These are from nibabel and are blocking calls, simply close the window to continue with the pipeline**
+
 To set up the environment:
 .. code-block:: bash
 
