@@ -9,14 +9,14 @@ from pipeline_utils.get_scores import *
 from pipeline_utils.frontend import *
 
 """
-Prototype explainable AI pipeline for neuroimaging data
+Prototype explainable AI pipeline for CN vs MCI prediction on neuroimaging data
 ======================================
 
 A standalone script that demonstrates the outcomes of this project, including the prediction on an MRI volume and the explainability. The pipeline makes use of the processing functions from preprocessing_post_fastsurfer.
 
 The script has two options for running, either run with no arguments to use a sample MRI /mri_samples/chris_t1 that has already been processed using fastsurfer. This skips the fastsurfer step but still performs the rest of the processing after that, then giving prediction and explainability.
 
-To run with a custom MRI, pass in the --from_nii argument with the path to the .nii file. This will run Fastsurfer on the file before the rest of the pipeline. The fastsurfer environment is built from a dockerfile, using docker or singularity (these must be installed). Currently, only x86 architecure is supported. Mac ARM users will need to use the sample MRI
+To run with a custom MRI, pass in the --from_nii argument with the path to the .nii file. This will run Fastsurfer on the file before the rest of the pipeline, which takes about 15 minutes on CPU. The fastsurfer environment is built from a dockerfile, using docker or singularity (these must be installed). Currently, only x86 architecure is supported. GPU is not enabled to maximise compatability as it is only working with 1 file anyway. Mac ARM users will need to use the sample MRI.
 
 The script itself does not run inside a container due to the GUI, instead a lightweight requirements.txt file is provided called pipeline_requirements.txt.
 
