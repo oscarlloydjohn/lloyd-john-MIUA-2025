@@ -1,7 +1,13 @@
-'''
-IMPORTS
-'''
+"""
 
+Train production
+===========
+
+This is the final parameter configuration for training the production model on train and validation sets, leaving the holdout
+
+:author: Oscar Lloyd-John
+
+"""
 # Torch
 import torch
 import torch.optim as optim
