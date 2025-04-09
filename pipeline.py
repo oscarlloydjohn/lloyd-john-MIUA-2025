@@ -118,7 +118,7 @@ if __name__ == "__main__":
                 "--sid", os.path.splitext(filename)[0],
                 "--t1", f"/tmp/mripredict/{filename}",
                 "--seg_only",
-                "--threads", args.threads
+                "--threads", f"{args.threads}"
             ]
             try:
                 subprocess.run(singularity_command, check=True)
@@ -137,7 +137,7 @@ if __name__ == "__main__":
                 "--sid", os.path.splitext(filename)[0],
                 "--sd", "/tmp/mripredict",
                 "--seg_only",
-                "--threads", args.threads,
+                "--threads", f"{args.threads}",
                 "--allow_root"
             ]
             try:
