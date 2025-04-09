@@ -66,6 +66,10 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
+    # Make a copy in tmp for use in the pipeline
+    os.makedirs("/tmp/mripredict/", exist_ok=True)
+
+    # If a custom mri is specified
     if args.from_nii != '':
 
         if not str(args.from_nii).endswith('.nii') or not os.path.isfile(args.from_nii):
@@ -95,11 +99,6 @@ if __name__ == "__main__":
                 except subprocess.CalledProcessError as e:
                     print(f"Error building Singularity image: {e}")
                     exit(1)
-
-    # Make a copy in tmp for use in the pipeline
-    os.makedirs("/tmp/mripredict/", exist_ok=True)
-
-    if args.from_nii != '':
 
         filename = os.path.basename(args.from_nii)
         tmp_path = os.path.join("/tmp/mripredict/", filename)
@@ -148,13 +147,13 @@ if __name__ == "__main__":
 
         subject = Subject("/tmp/mripredict/{filename}", None)
     
+    # If no custom mri, just use chris_t1. Also copies to tmp rather than working in that directory
     else:
 
         dirname = os.path.join(os.path.dirname(__file__), "mri_samples/chris_t1")
         tmp_path = os.path.join("/tmp/mripredict/", "chris_t1")
         shutil.copytree(dirname, tmp_path, dirs_exist_ok=True)
 
-        # Process the subject
         subject = Subject(tmp_path, None)
 
     subject_data = process_single_subject(subject)
