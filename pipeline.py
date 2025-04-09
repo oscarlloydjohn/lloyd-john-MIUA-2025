@@ -154,7 +154,7 @@ if __name__ == "__main__":
                 print(f"Error running Fastsurfer with docker: {e}")
                 exit(1)
 
-        subject = Subject(f"/tmp/mripredict/{filename}", None)
+        subject = Subject(f"/tmp/mripredict/{os.path.splitext(filename)[0]}", None)
     
     # If no custom mri, just use chris_t1. Also copies to tmp rather than working in that directory
     else:
