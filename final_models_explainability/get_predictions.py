@@ -91,8 +91,6 @@ def get_volumes_prediction(input: np.ndarray, struct_names: list = None):
     # Load model once and cache
     if not hasattr(get_volumes_prediction, "model"):
 
-        print("Loading volumes GBDT model...")
-
         with open(os.path.join(os.path.dirname(__file__), "volumes_gbdt.pkl"), 'rb') as file:
 
             get_volumes_prediction.model = pickle.load(file)
@@ -121,8 +119,6 @@ def get_scores_prediction(input):
     # Load model once and cache
     if not hasattr(get_scores_prediction, "model"):
 
-        print("Loading scores GBDT model...")
-
         with open(os.path.join(os.path.dirname(__file__), "scores_gbdt.pkl"), 'rb') as file:
 
             get_scores_prediction.model = pickle.load(file)
@@ -149,61 +145,30 @@ def get_ensemble_prediction_avg(pointnet_output, volumes_output, scores_output, 
 
     return pred_class, average
 
-'''# Max probability rule (Lassila et. al)
+# Max probability rule (Lassila et. al)
 # Need to verify this is correct
-def get_ensemble_prediction_maxprob(subject_data):
+def get_ensemble_prediction_maxprob(pointnet_tuple, volumes_tuple, scores_tuple, scores=True):
 
-    pointnet_pred = get_pointnet_prediction(subject_data['lhcampus_pointcloud_aligned'], 'cpu')
+    max_confidence = -np.inf
+
+    best_pred = None
+
+    best_index = -1
+
+    outputs_list = [pointnet_tuple, volumes_tuple, scores_tuple]
+
+    if scores == False:
     
-    volumes_pred = get_volumes_prediction(subject_data['volumes'])
+        outputs_list.pop()
 
-    scores_pred = get_scores_prediction(subject_data['scores'])
+    for i, pred in enumerate(outputs_list):
 
-    max_confidence = -np.inf
+        if pred[1] > max_confidence:
 
-    best_pred = None
-
-    best_index = -1
-
-    for i, pred in enumerate([pointnet_pred, volumes_pred, scores_pred]):
-
-        if pred[2] > max_confidence:
-
-            max_confidence = pred[2]
+            max_confidence = pred[1]
 
             best_pred = pred
 
             best_index = i
 
-    return best_pred[0], best_pred[1], best_pred[2], best_index'''
-
-# Should it be max for only the positive class or for both classes?
-# Needs refactor
-def get_ensemble_prediction_maxprob(subject_data):
-
-    pointnet_pred = get_pointnet_prediction(subject_data['lhcampus_pointcloud_aligned'], 'cpu')
-
-    volumes_pred = get_volumes_prediction(subject_data['volumes'])
-
-    scores_pred = get_scores_prediction(subject_data['scores'])
-
-    max_confidence = -np.inf
-
-    best_pred = None
-
-    best_index = -1
-
-    for i, pred in enumerate([pointnet_pred, volumes_pred, scores_pred]):
-
-        # Consider both high positive and high negative confidence
-        confidence = max(pred[2], 1 - pred[2])  
-
-        if confidence > max_confidence:
-
-            max_confidence = confidence
-
-            best_pred = pred
-
-            best_index = i
-
-    return best_pred[0], best_pred[1], best_pred[2], best_index
+    return best_pred[0], best_pred[1], best_index
