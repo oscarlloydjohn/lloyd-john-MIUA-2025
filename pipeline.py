@@ -81,7 +81,7 @@ if __name__ == "__main__":
     
     norm_xyz_sum = normalise_attributions(attributions)
 
-    hcampus_plotter = vis_attributions(norm_xyz_sum, subject_data['lhcampus_pointcloud_aligned'])
+    hcampus_plotter = vis_attributions(subject_data['lhcampus_pointcloud_aligned'], norm_xyz_sum)
 
     volumes_plotter = vis_volumes(subject, shap_values)
 

@@ -28,9 +28,14 @@ class MainWindow(QMainWindow):
         self.setCentralWidget(self.tab_widget)
 
         # Tab for prediction
+        mapping = {
+                        0: 'CN',
+                        1: 'MCI'
+                    }
+
         prediction_tab = QWidget()
         prediction_layout = QVBoxLayout()
-        prediction_str = "Prediction: " + str(prediction)
+        prediction_str = "Prediction: " + f"{mapping.get(prediction[0])} (Output {prediction[1]:.4f})"
         prediction_label = QLabel(prediction_str)
         prediction_label.setAlignment(Qt.AlignCenter)
         prediction_layout.addWidget(prediction_label)
