@@ -1,7 +1,7 @@
 #!/bin/bash
 
-DATA_PATH=""
-SCRIPT_PATH="/uolstore/home/users/sc22olj/Compsci/year3/individual-project-COMP3931/individual-project-sc22olj/preprocessing_pre_fastsufer/preprocess.py"
+DATA_PATH="/uolstore/home/users/sc22olj/Compsci/year3/individual-project-COMP3931/niivue-images"
+SCRIPT_PATH="/uolstore/home/users/sc22olj/Compsci/year3/individual-project-COMP3931/individual-project-sc22olj/preprocessing_pre_fastsurfer/preprocess.py"
 LICENSE_PATH="/vol/scratch/SoC/misc/2024/sc22olj/tools/freesurfer-license/license.txt"
 CONTAINER_PATH="/vol/scratch/SoC/misc/2024/sc22olj/fastsurfer-gpu.sif"
 

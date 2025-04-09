@@ -43,9 +43,9 @@ if __name__ == "__main__":
     
     else:
 
-        dirname = os.path.join(os.path.dirname(__file__), "mri_samples/fastsurfer_sample")
+        dirname = os.path.join(os.path.dirname(__file__), "mri_samples/chris_t1")
 
-        tmp_path = os.path.join("/tmp/mripredict/", "fastsurfer_sample")
+        tmp_path = os.path.join("/tmp/mripredict/", "chris_t1")
 
         shutil.copytree(dirname, tmp_path, dirs_exist_ok=True)
 
