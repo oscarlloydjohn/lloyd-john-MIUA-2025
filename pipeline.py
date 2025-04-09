@@ -8,12 +8,61 @@ from pipeline_utils.image_processing import *
 from pipeline_utils.get_scores import *
 from pipeline_utils.frontend import *
 
-# THIS WHOLE FILE NEEDS TO RUN IN A DOCKER CONTAINER FOR FROM_NII
+"""
+Prototype explainable AI pipeline for neuroimaging data
+======================================
+
+A standalone script that demonstrates the outcomes of this project, including the prediction on an MRI volume and the explainability. The pipeline makes use of the processing functions from preprocessing_post_fastsurfer.
+
+The script has two options for running, either run with no arguments to use a sample MRI /mri_samples/chris_t1 that has already been processed using fastsurfer. This skips the fastsurfer step but still performs the rest of the processing after that, then giving prediction and explainability.
+
+To run with a custom MRI, pass in the --from_nii argument with the path to the .nii file. This will run Fastsurfer on the file before the rest of the pipeline. The fastsurfer environment is built from a dockerfile, using docker or singularity (these must be installed). Currently, only x86 architecure is supported. Mac ARM users will need to use the sample MRI
+
+The script itself does not run inside a container due to the GUI, instead a lightweight requirements.txt file is provided called pipeline_requirements.txt.
+
+
+Arguments
+---------
+
+- **--from_nii** (*str*) **(required)**:
+    The path to the .nii file to process. If not provided, a sample MRI will be used.
+
+- **--threads** (*int*) **(required)**:  
+    Number of threads to use for fastsurfer processing
+
+
+Usage
+-----
+
+To set up the environment:
+.. code-block:: bash
+
+    python -m venv .pipelinevenv
+
+    source .pipelinevenv/bin/activate
+
+    pip install -r pipeline_requirements.txt
+
+
+To run the script using the sample MRI:
+.. code-block:: bash
+
+    python3 pipeline.py
+
+To run the script using a custom MRI:
+.. code-block:: bash
+
+    python3 pipeline.py --from_nii <absolute path to .nii file> --threads <number of threads>
+
+:author: Oscar Lloyd-John
+"""
+
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(description="Script for running a prediction on a single .nii file")
 
     parser.add_argument('--from_nii', type=str, default='')
+    parser.add_argument('--threads', type=int, default=4)
 
     args = parser.parse_args()
 
@@ -69,7 +118,7 @@ if __name__ == "__main__":
                 "--sid", os.path.splitext(filename)[0],
                 "--t1", f"/tmp/mripredict/{filename}",
                 "--seg_only",
-                "--threads", "4"
+                "--threads", args.threads
             ]
             try:
                 subprocess.run(singularity_command, check=True)
@@ -88,7 +137,7 @@ if __name__ == "__main__":
                 "--sid", os.path.splitext(filename)[0],
                 "--sd", "/tmp/mripredict",
                 "--seg_only",
-                "--threads", "4",
+                "--threads", args.threads,
                 "--allow_root"
             ]
             try:
@@ -97,7 +146,7 @@ if __name__ == "__main__":
                 print(f"Error running Fastsurfer with docker: {e}")
                 exit(1)
 
-        subject = Subject("/tmp/mripredict", None)
+        subject = Subject("/tmp/mripredict/{filename}", None)
     
     else:
 
