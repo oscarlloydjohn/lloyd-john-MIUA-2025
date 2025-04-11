@@ -113,5 +113,13 @@ def vis_attributions(cloud: np.ndarray, norm_xyz_sum: np.ndarray) -> BackgroundP
     plotter.add_points(pv_cloud, scalars=norm_xyz_sum, cmap=custom_cmap, clim= [0,1])
 
     plotter.set_background("black")
+
+    plotter.add_text(
+    "Red: positive attribution for MCI\nBlue: negative attribution for MCI",
+    position='upper_left',
+    font_size=12,
+    color='white',
+    shadow=False
+    )
     
     return plotter
