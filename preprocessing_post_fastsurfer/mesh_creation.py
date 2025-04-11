@@ -19,7 +19,6 @@ This module provides functions for converting a voxel volumes into point clouds 
 :author: Oscar Lloyd-John
 """
 
-# Convert a volume of voxels to a pointcloud mesh using walking cubes
 def volume_to_mesh(subject: object, fname_or_attribute, smooth: bool = False, number_of_iterations: int = 1, lambda_filter: float = 0.5, **kwargs) -> dict:
 
     """
