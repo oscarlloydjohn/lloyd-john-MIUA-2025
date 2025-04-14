@@ -14,11 +14,13 @@ from matplotlib.colors import LinearSegmentedColormap
 import numpy as np
 from pyvistaqt import BackgroundPlotter
 
-def explain_pointnet(model: torch.nn.Module, input: torch.Tensor) -> np.ndarray:
+def explain_pointnet(model: torch.nn.Module, input: torch.Tensor, mode: str = 'zero') -> np.ndarray:
     """
     Explain an individual classification on a sample by a pointnet model (local explanation) by attributing the output to the input features using integrated gradients
 
     Transposes the input before attributing as pointnet expects input in the form n x 3. Note that transposing after attribution does not give proper explanations as the attributions will be for dimensions rather than points.
+
+    The integrated gradient baseline for comparison can be a mean of the given point cloud or a zero cloud.
 
     Note that attributions are always relative to the positive class
     
@@ -40,7 +42,14 @@ def explain_pointnet(model: torch.nn.Module, input: torch.Tensor) -> np.ndarray:
     input = input.unsqueeze(0).transpose(2, 1)
 
     # Baseline is zeros, however could also be some kind of noise cloud
-    baseline = torch.zeros_like(input)
+    if mode == 'mean':
+
+        baseline = torch.mean(input, dim=1, keepdim=True)
+        baseline = baseline.expand_as(input)
+
+    if mode == 'zero':
+
+        baseline = torch.zeros_like(input)
 
     attributions = ig.attribute(input, baseline, target=1, internal_batch_size=1)
     

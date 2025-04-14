@@ -1,4 +1,7 @@
 import subprocess
+import argparse
+import os
+import shutil
 
 # Custom modules
 from preprocessing_post_fastsurfer.subject import *
@@ -85,31 +88,77 @@ def process_single_subject(subject: Subject) -> dict:
 
     return subject_data
 
-def run_fastsurfer(data_path: os.PathLike[str], filename: str, threads = 4) -> None:
-    """
+def run_fastsurfer(path, threads) -> Subject:
 
-    Runs fastsurfer, expecting that this code is run inside a container or there is a native install
+    # Check if Singularity or Docker is installed
+    singularity_installed = shutil.which("singularity") is not None
+    docker_installed = shutil.which("docker") is not None
 
-    :param data_path: The path to the .nii file for fastsurfer to process
-    :type data_path: os.PathLike[str]
-    :param filename: The name of the file (without file ext), processed images will be put into a directory with this name
-    :type filename: str
-    :param threads: The number of threads for fastsurfer to use, defaults to 4
-    :type threads: int, optional
-    """
+    if not singularity_installed and not docker_installed:
+        print("Neither singularity or docker are installed, try using the sample MRI by running without --from_nii")
+        exit(1)
+    singularity_image = "fastsurfer-cpu.sif"
 
-    dirname = os.path.splitext(os.path.basename(filename))[0]
+    if singularity_installed:
+        if not os.path.isfile(singularity_image):
+            print(f"Singularity image {singularity_image} not found, building it now")
+            try:
+                subprocess.run(
+                    [
+                        "singularity", "build", singularity_image,
+                        "docker://deepmi/fastsurfer:cpu-v2.4.2"
+                    ],
+                    check=True
+                )
+            except subprocess.CalledProcessError as e:
+                print(f"Error building Singularity image: {e}")
+                exit(1)
 
-    command = [
-        "/fastsurfer/run_fastsurfer.sh",
-        f"--sd", data_path,
-        "--sid", dirname,
-        f"--t1", f"{data_path}/{filename}",
-        "--seg_only", "--threads", f"{threads}"
-    ]
+    filename = os.path.basename(path)
+    tmp_path = os.path.join("/tmp/mripredict/", filename)
+    shutil.copy(path, tmp_path)
 
-    process = subprocess.Popen(command)
-    
-    process.wait()
-    
-    return
+    # Run FastSurfer using Singularity or Docker
+    if singularity_installed:
+        print("Running Fastsurfer using singularity")
+        singularity_command = [
+            "singularity", "exec",
+            "--no-home",
+            "-B", "/tmp/mripredict:/tmp/mripredict",
+            singularity_image,
+            "/fastsurfer/run_fastsurfer.sh",
+            "--sd", "/tmp/mripredict",
+            "--sid", os.path.splitext(filename)[0],
+            "--t1", f"/tmp/mripredict/{filename}",
+            "--seg_only",
+            "--threads", f"{threads}"
+        ]
+        try:
+            subprocess.run(singularity_command, check=True)
+        except subprocess.CalledProcessError as e:
+            print(f"Error running Fastsurfer with singularity: {e}")
+            exit(1)
+
+    elif docker_installed:
+        print("Running Fastsurfer using docker")
+        docker_command = docker_command = [
+            "docker", "run", "--rm",
+            "--user", "0",
+            "-v", "/tmp/mripredict:/tmp/mripredict",
+            "deepmi/fastsurfer:cpu-v2.4.2",
+            "--t1", f"/tmp/mripredict/{filename}",
+            "--sid", os.path.splitext(filename)[0],
+            "--sd", "/tmp/mripredict",
+            "--seg_only",
+            "--threads", f"{threads}",
+            "--allow_root"
+        ]
+        try:
+            subprocess.run(docker_command, check=True)
+        except subprocess.CalledProcessError as e:
+            print(f"Error running Fastsurfer with docker: {e}")
+            exit(1)
+
+    subject = Subject(f"/tmp/mripredict/{os.path.splitext(filename)[0]}", None)
+
+    return subject
