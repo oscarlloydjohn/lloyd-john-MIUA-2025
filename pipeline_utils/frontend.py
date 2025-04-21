@@ -77,61 +77,6 @@ class MainWindow(QMainWindow):
         shap_canvas.figure.tight_layout()
         shap_canvas.draw()
 
-        # Custom plot
-        df = pd.DataFrame({
-            'Feature': shap_values.feature_names,
-            'SHAP Value': shap_values.values,
-            'Feature Value': shap_values.data
-        })
-
-        # Sort by absolute SHAP value
-        df['abs_shap'] = df['SHAP Value'].abs()
-        df_sorted = df.sort_values('abs_shap', ascending=False).reset_index(drop=True)
-
-        # Show top 10, rest are aggregated
-        max_display = 10
-        df_top = df_sorted.iloc[:10].copy()
-        if len(df_sorted) > 10:
-            other_shap_sum = df_sorted['SHAP Value'][10:].sum()
-            df_other = pd.DataFrame([{
-                'Feature': 'Sum of other regions',
-                'SHAP Value': other_shap_sum,
-                'Feature Value': 0,
-                'abs_shap': abs(other_shap_sum)
-            }])
-            df_top = pd.concat([df_top, df_other], ignore_index=True)
-
-        custom_canvas.figure.clf()
-        custom_ax = custom_canvas.figure.add_subplot(111)
-
-        # Normalize and apply SHAP red_blue colormap
-        norm = plt.Normalize(df_top['Feature Value'].min(), df_top['Feature Value'].max())
-        colors = []
-        for _, row in df_top.iterrows():
-            if row['Feature'] == 'Sum of other regions':
-                colors.append('lightgrey')
-            else:
-                colors.append(shap.plots.colors.red_blue(norm(row['Feature Value'])))
-
-        bars = custom_ax.barh(df_top['Feature'], df_top['SHAP Value'], color=colors)
-
-        # Largest at top
-        custom_ax.invert_yaxis()
-
-        # Update colorbar to match the SHAP colormap
-        sm = plt.cm.ScalarMappable(cmap=shap.plots.colors.red_blue, norm=norm)
-        sm.set_array([])
-        cbar = custom_canvas.figure.colorbar(sm, ax=custom_ax)
-        cbar.set_label('Feature Value')
-
-        # Labels and layout
-        custom_ax.set_xlabel('SHAP Value')
-        custom_ax.set_title('Top brain regions SHAP attributions')
-        custom_ax.set_ylabel('Brain region')
-        custom_ax.axvline(0, linestyle='-', color='black')
-        custom_canvas.figure.tight_layout()
-        custom_canvas.draw()
-
 def show_main_window(prediction: tuple, hippocampus_plotter: pyvista.BackgroundPlotter, volumes_plotter: pyvista.BackgroundPlotter, shap_values: shap.Explanation):
 
     """
