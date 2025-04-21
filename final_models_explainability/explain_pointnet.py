@@ -65,7 +65,7 @@ def normalise_attributions(attributions: np.ndarray, power: float = 0.25) -> np.
 
     """
 
-    Take attributions of shape n x 3 and return a list of attributions for each point. The attributions are summed for each point and then normalised to a value between 0 and 1. 
+    Take attributions of shape n x 3 and return a list of attributions for each point. The attributions are summed for each point and then normalised to a value between 0 and 1. Note that the returned attributions are absolute, because the sign of the attributions does not have much meaning in terms of structural properties.
     
     :param attributions: The pointnet attributions to visualise
     :type attributions: np.ndarray
@@ -78,21 +78,9 @@ def normalise_attributions(attributions: np.ndarray, power: float = 0.25) -> np.
     # Sum x, y and z values for an overall attribution for that point
     xyz_sum = np.sum(attributions, axis=1)
 
-    xyz_sum = np.sign(xyz_sum) * np.power(np.abs(xyz_sum), power)
+    xyz_sum = np.power(np.abs(xyz_sum), power)
 
-
-    # Normalise such that 0 attribution maps to 0.5 and the relative sizes of positive and negative attributions is preserved
-    def norm(data):
-
-        min = np.min(data)
-        max = np.max(data)
-
-        max_abs_val = np.max((np.abs(min), np.abs(max)))
-
-        return np.array([0.5 + (value / (2 * max_abs_val)) for value in data])
-
-
-    norm_xyz_sum = norm(xyz_sum)
+    norm_xyz_sum =  xyz_sum/np.max(xyz_sum)
 
     return norm_xyz_sum
 
@@ -100,7 +88,7 @@ def vis_attributions(cloud: np.ndarray, norm_xyz_sum: np.ndarray) -> BackgroundP
 
     """
 
-    Visualise the normalised attributions returned by normalise_attributions. These values are then visualised as a point cloud with a custom colour map, where 0 attributions are white, positive attributions are red and negative attributions are blue.
+    Visualise the normalised attributions returned by normalise_attributions. These values are then visualised as a point cloud with a custom colour map, where 0 attributions are white and 1 attributions are red.
 
     :param cloud: The point cloud to visualise the attributions on, make sure this is the same point cloud that was used to generate the attributions
     :type cloud: np.ndarray
@@ -110,8 +98,7 @@ def vis_attributions(cloud: np.ndarray, norm_xyz_sum: np.ndarray) -> BackgroundP
     :rtype: BackgroundPlotter
     """
 
-    # Have to use custom cmap to force the 0 attributions to be white
-    colours = [(0, 'blue'), (0.5, 'white'), (1, 'red')]
+    colours = [(0, 'white'), (1, 'red')]
     
     custom_cmap = LinearSegmentedColormap.from_list('custom_cmap', colours)
 
@@ -124,7 +111,7 @@ def vis_attributions(cloud: np.ndarray, norm_xyz_sum: np.ndarray) -> BackgroundP
     plotter.set_background("black")
 
     plotter.add_text(
-    "Red: positive attribution for MCI\nBlue: negative attribution for MCI",
+    "Red indicates a region of high attribution for classification",
     position='upper_left',
     font_size=12,
     color='white',

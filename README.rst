@@ -10,3 +10,5 @@ Pipeline usage
 
 .. toctree::
     
+
+**add html rendering of hippocampus**
