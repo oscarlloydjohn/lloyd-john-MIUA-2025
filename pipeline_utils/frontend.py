@@ -1,5 +1,6 @@
 import sys
 from PyQt5.QtWidgets import QApplication, QMainWindow, QTabWidget, QWidget, QVBoxLayout, QLabel
+from PyQt5.QtGui import QFont
 from PyQt5.QtCore import Qt
 import pyvista as pv
 from pyvistaqt import QtInteractor
@@ -39,6 +40,10 @@ class MainWindow(QMainWindow):
         prediction_layout = QVBoxLayout()
         prediction_str = "Prediction: " + f"{mapping.get(prediction[0])} (Output {prediction[1]:.4f})"
         prediction_label = QLabel(prediction_str)
+        font = QFont()
+        font.setPointSize(28)
+        font.setBold(True)
+        prediction_label.setFont(font)
         prediction_label.setAlignment(Qt.AlignCenter)
         prediction_layout.addWidget(prediction_label)
         prediction_tab.setLayout(prediction_layout)
@@ -65,9 +70,7 @@ class MainWindow(QMainWindow):
         shap_tab = QWidget()
         shap_layout = QVBoxLayout()
         shap_canvas = FigureCanvas(plt.Figure())
-        custom_canvas = FigureCanvas(plt.Figure())
         shap_layout.addWidget(shap_canvas)
-        shap_layout.addWidget(custom_canvas)
         shap_tab.setLayout(shap_layout)
         self.tab_widget.addTab(shap_tab, "Brain regions SHAP attributions")
 
