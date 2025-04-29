@@ -6,7 +6,7 @@
 <link rel="index" title="Index" href="genindex.html" /><link rel="search" title="Search" href="search.html" />
 
     <!-- Generated with Sphinx 8.2.3 and Furo 2024.08.06 -->
-        <title>Compatability and system requirements - Final project sc22olj 0.1 documentation</title>
+        <title>Prototype explainable AI pipeline for CN vs MCI prediction on neuroimaging data - Final project sc22olj 0.1 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=354aac6f" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo-extensions.css?v=302659d7" />
@@ -178,7 +178,7 @@
           <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
         </button>
       </div>
-      <label class="toc-overlay-icon toc-header-icon no-toc" for="__toc">
+      <label class="toc-overlay-icon toc-header-icon" for="__toc">
         <div class="visually-hidden">Toggle table of contents sidebar</div>
         <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
       </label>
@@ -274,28 +274,27 @@
               <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
             </button>
           </div>
-          <label class="toc-overlay-icon toc-content-icon no-toc" for="__toc">
+          <label class="toc-overlay-icon toc-content-icon" for="__toc">
             <div class="visually-hidden">Toggle table of contents sidebar</div>
             <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
           </label>
         </div>
         <article role="main" id="furo-main-content">
-          <p>“””
-Prototype explainable AI pipeline for CN vs MCI prediction on neuroimaging data
-======================================</p>
+          <section id="prototype-explainable-ai-pipeline-for-cn-vs-mci-prediction-on-neuroimaging-data">
+<h1>Prototype explainable AI pipeline for CN vs MCI prediction on neuroimaging data<a class="headerlink" href="#prototype-explainable-ai-pipeline-for-cn-vs-mci-prediction-on-neuroimaging-data" title="Link to this heading">¶</a></h1>
 <p>A standalone script that demonstrates the outcomes of this project, including the prediction on an MRI volume and the explainability. The pipeline makes use of the processing functions from preprocessing_post_fastsurfer.</p>
 <p>The script has two options for running, either run with no arguments to use a sample MRI /mri_samples/chris_t1 that has already been processed using fastsurfer. This skips the fastsurfer step but still performs the rest of the processing after that, then giving prediction and explainability.</p>
 <p>To run with a custom MRI, pass in the –from_nii argument with the path to the .nii file. This will run Fastsurfer on the file before the rest of the pipeline, which takes about 15 minutes on CPU. The fastsurfer environment is built from a dockerfile, using docker or singularity (these must be installed).</p>
 <p>The script itself does not run inside a container due to the GUI, instead a lightweight requirements.txt file is provided called pipeline_requirements.txt.</p>
 <section id="compatability-and-system-requirements">
-<h1>Compatability and system requirements<a class="headerlink" href="#compatability-and-system-requirements" title="Link to this heading">¶</a></h1>
+<h2>Compatability and system requirements<a class="headerlink" href="#compatability-and-system-requirements" title="Link to this heading">¶</a></h2>
 <p>8Gb of ram is needed for fastsurfer inference, otherwise is pretty lightweight</p>
 <p>Not tested on windows, probably doesn’t work due to the way windows handles file paths.</p>
 <p>For using the sample mri, ARM and x86 are supported</p>
 <p>For using custom MRI, only x86 architecure is supported which can be linux or macos. GPU is not enabled to maximise compatability as it is only working with 1 file anyway. ARM is not supported as fastsurfer provide no docker images for arm installs. It will actually run by emulating the architecture however it will probably take about a million years.</p>
 </section>
 <section id="arguments">
-<h1>Arguments<a class="headerlink" href="#arguments" title="Link to this heading">¶</a></h1>
+<h2>Arguments<a class="headerlink" href="#arguments" title="Link to this heading">¶</a></h2>
 <ul class="simple">
 <li><dl class="simple">
 <dt><strong>–from_nii</strong> (<em>str</em>) <strong>(required)</strong>:</dt><dd><p>The path to the .nii file to process. If not provided, a sample MRI will be used.</p>
@@ -310,31 +309,28 @@ Prototype explainable AI pipeline for CN vs MCI prediction on neuroimaging data
 </ul>
 </section>
 <section id="usage">
-<h1>Usage<a class="headerlink" href="#usage" title="Link to this heading">¶</a></h1>
+<h2>Usage<a class="headerlink" href="#usage" title="Link to this heading">¶</a></h2>
 <p><strong>Note, during the pipeline there may be popup windows that show some of the processing steps. These are from nibabel and are blocking calls, simply close the window to continue with the pipeline</strong></p>
-<p>To set up the environment:
-.. code-block:: bash</p>
-<blockquote>
-<div><p>python -m venv .pipelinevenv</p>
-<p>source .pipelinevenv/bin/activate</p>
-<p>pip install -r pipeline_requirements.txt</p>
-</div></blockquote>
-<p>To run the script using the sample MRI:
-.. code-block:: bash</p>
-<blockquote>
-<div><p>python3 pipeline.py</p>
-</div></blockquote>
-<p>To run the script using a custom MRI. If using docker make sure it is running first by opening the docker app:
-.. code-block:: bash</p>
-<blockquote>
-<div><p>python3 pipeline.py –from_nii &lt;absolute path to .nii file&gt; –threads &lt;number of threads&gt;</p>
-</div></blockquote>
+<p>To set up the environment:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>-m<span class="w"> </span>venv<span class="w"> </span>.pipelinevenv
+<span class="nb">source</span><span class="w"> </span>.pipelinevenv/bin/activate
+pip<span class="w"> </span>install<span class="w"> </span>-r<span class="w"> </span>pipeline_requirements.txt
+</pre></div>
+</div>
+<p>To run the script using the sample MRI:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python3<span class="w"> </span>pipeline.py
+</pre></div>
+</div>
+<p>To run the script using a custom MRI. If using docker make sure it is running first by opening the docker app:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python3<span class="w"> </span>pipeline.py<span class="w"> </span>--from_nii<span class="w"> </span>&lt;absolute<span class="w"> </span>path<span class="w"> </span>to<span class="w"> </span>.nii<span class="w"> </span>file&gt;<span class="w"> </span>--threads<span class="w"> </span>&lt;number<span class="w"> </span>of<span class="w"> </span>threads&gt;
+</pre></div>
+</div>
 <dl class="field-list simple">
 <dt class="field-odd">author<span class="colon">:</span></dt>
 <dd class="field-odd"><p>Oscar Lloyd-John</p>
 </dd>
 </dl>
-<p>“””</p>
+</section>
 </section>
 
         </article>
@@ -362,8 +358,29 @@ Prototype explainable AI pipeline for CN vs MCI prediction on neuroimaging data
         
       </footer>
     </div>
-    <aside class="toc-drawer no-toc">
+    <aside class="toc-drawer">
       
+      
+      <div class="toc-sticky toc-scroll">
+        <div class="toc-title-container">
+          <span class="toc-title">
+            On this page
+          </span>
+        </div>
+        <div class="toc-tree-container">
+          <div class="toc-tree">
+            <ul>
+<li><a class="reference internal" href="#">Prototype explainable AI pipeline for CN vs MCI prediction on neuroimaging data</a><ul>
+<li><a class="reference internal" href="#compatability-and-system-requirements">Compatability and system requirements</a></li>
+<li><a class="reference internal" href="#arguments">Arguments</a></li>
+<li><a class="reference internal" href="#usage">Usage</a></li>
+</ul>
+</li>
+</ul>
+
+          </div>
+        </div>
+      </div>
       
       
     </aside>

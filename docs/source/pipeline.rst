@@ -1,4 +1,3 @@
-"""
 Prototype explainable AI pipeline for CN vs MCI prediction on neuroimaging data
 ======================================
 
@@ -36,24 +35,23 @@ Usage
 **Note, during the pipeline there may be popup windows that show some of the processing steps. These are from nibabel and are blocking calls, simply close the window to continue with the pipeline**
 
 To set up the environment:
+
 .. code-block:: bash
 
     python -m venv .pipelinevenv
-
     source .pipelinevenv/bin/activate
-
     pip install -r pipeline_requirements.txt
 
-
 To run the script using the sample MRI:
+
 .. code-block:: bash
 
     python3 pipeline.py
 
 To run the script using a custom MRI. If using docker make sure it is running first by opening the docker app:
+
 .. code-block:: bash
 
     python3 pipeline.py --from_nii <absolute path to .nii file> --threads <number of threads>
 
 :author: Oscar Lloyd-John
-"""
