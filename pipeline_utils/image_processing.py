@@ -1,3 +1,12 @@
+"""
+Image procesing
+===========
+
+This module provides functions processing a single MRI scan for use in the pipeline. It uses functions from preprocessing_post_fastsurfer, and also can run fastsurfer.
+
+:author: Oscar Lloyd-John
+"""
+
 import subprocess
 import argparse
 import os
@@ -8,15 +17,6 @@ from preprocessing_post_fastsurfer.subject import *
 from preprocessing_post_fastsurfer.alignment import *
 from preprocessing_post_fastsurfer.cropping import *
 from preprocessing_post_fastsurfer.mesh_creation import *
-
-"""
-Image procesing
-===========
-
-This module provides functions processing a single MRI scan for use in the pipeline. It uses functions from preprocessing_post_fastsurfer, and also can run fastsurfer.
-
-:author: Oscar Lloyd-John
-"""
 
 
 def process_single_subject(subject: Subject) -> dict:

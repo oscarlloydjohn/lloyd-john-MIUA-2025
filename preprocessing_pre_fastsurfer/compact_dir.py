@@ -1,7 +1,3 @@
-import os
-import shutil
-import argparse
-
 """
 Directory Compaction Utility Script
 =============================
@@ -19,6 +15,10 @@ Run the script with the required arguments to delete files matching a specific f
 
 :author: Oscar Lloyd-John
 """
+
+import os
+import shutil
+import argparse
 
 # Recursively search all subdirectories for files and put them in data_path. Delete empty directories
 def compact_dir(data_path: os.PathLike[str]) -> None:

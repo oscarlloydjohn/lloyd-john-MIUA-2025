@@ -1,8 +1,3 @@
-import os
-import concurrent.futures
-from concurrent.futures import ThreadPoolExecutor
-import argparse
-
 """
 File Deletion Utility Script 2
 =============================
@@ -18,6 +13,11 @@ Usage
 
 :author: Oscar Lloyd-John
 """
+
+import os
+import concurrent.futures
+from concurrent.futures import ThreadPoolExecutor
+import argparse
 
 def delete_files_containing(data_path: os.PathLike[str], string: str) -> None:
 

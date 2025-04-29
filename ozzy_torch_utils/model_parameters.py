@@ -1,6 +1,3 @@
-import os
-from typing import Callable
-
 """
 
 Model parameters
@@ -11,6 +8,9 @@ This is a class used to store all hyperparameters used in the train_nn module. I
 :author: Oscar Lloyd-John
 
 """
+
+import os
+from typing import Callable
 
 class ModelParameters:
 

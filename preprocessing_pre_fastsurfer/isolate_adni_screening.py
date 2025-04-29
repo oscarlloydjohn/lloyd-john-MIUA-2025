@@ -1,9 +1,3 @@
-import glob
-import pandas as pd
-import os
-import shutil
-import argparse
-
 """
 ADNI download filtering script
 =============================
@@ -23,6 +17,12 @@ Run the script with the required arguments to delete files matching a specific f
 
 :author: Oscar Lloyd-John
 """
+
+import glob
+import pandas as pd
+import os
+import shutil
+import argparse
 
 if __name__ == "__main__":
     

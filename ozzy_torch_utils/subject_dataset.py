@@ -1,12 +1,3 @@
-import torch
-from torch.utils.data import Dataset
-import nibabel
-import os
-import numpy as np
-import random
-from tqdm import tqdm
-from preprocessing_post_fastsurfer.subject import *
-
 """
 
 Subject dataset
@@ -15,6 +6,15 @@ Subject dataset
 :author: Oscar Lloyd-John
 
 """
+
+import torch
+from torch.utils.data import Dataset
+import nibabel
+import os
+import numpy as np
+import random
+from tqdm import tqdm
+from preprocessing_post_fastsurfer.subject import *
 
 class SubjectDataset(Dataset):
 

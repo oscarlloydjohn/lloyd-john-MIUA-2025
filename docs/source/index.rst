@@ -3,15 +3,15 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to Final project sc22olj's documentation!
+Welcome to sc22olj's final project documentation!
 =================================================
 
 Packages
 =============================
+The 5 interoperable Python packages created for this project are documented here.
 
 .. toctree::
-   :maxdepth: 2
-   :caption: Contents:
+   :maxdepth: 1
 
    preprocessing_pre_fastsurfer/index
    preprocessing_post_fastsurfer/index
@@ -19,32 +19,7 @@ Packages
    pipeline_utils/index
    final_models_explainability/index
 
-.. automodule:: preprocessing_pre_fastsurfer
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-.. automodule:: preprocessing_post_fastsurfer
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-.. automodule:: ozzy_torch_utils
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-.. automodule:: pipeline_utils
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-.. automodule:: final_models_explainability
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-Indices and tables
+Indices and search
 ==================
 
 * :ref:`genindex`

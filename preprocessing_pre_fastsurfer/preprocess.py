@@ -1,9 +1,3 @@
-import os
-import subprocess
-import shutil
-from concurrent.futures import ThreadPoolExecutor
-import argparse
-
 """
 Fastsurfer Processing Pipeline Script
 ======================================
@@ -49,6 +43,12 @@ Run the script inside a container compatible with fastsurfer, with the required 
 
 :author: Oscar Lloyd-John
 """
+
+import os
+import subprocess
+import shutil
+from concurrent.futures import ThreadPoolExecutor
+import argparse
 
 
 def batch_mgz_to_nii(data_path: os.PathLike[str], batchname: str) -> None:

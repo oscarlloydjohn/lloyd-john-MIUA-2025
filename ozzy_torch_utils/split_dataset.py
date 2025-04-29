@@ -1,5 +1,3 @@
-from torch.utils.data import random_split, Subset, Dataset
-
 """
 
 Split dataset
@@ -8,6 +6,8 @@ Split dataset
 :author: Oscar Lloyd-John
 
 """
+
+from torch.utils.data import random_split, Subset, Dataset
 
 def split_dataset(dataset: Dataset, test_size: float = 0.2) -> tuple[Subset, Subset]:
 

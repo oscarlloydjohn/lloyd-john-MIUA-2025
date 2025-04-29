@@ -1,14 +1,3 @@
-import nibabel
-import nibabel.affines
-import os
-import numpy as np
-import pandas as pd
-import concurrent.futures
-
-# Custom modules
-from .vis import *
-from .subject import *
-
 """
 
 Extraction
@@ -19,6 +8,17 @@ This module provides functions extracting brain regions from a brain image using
 :author: Oscar Lloyd-John
 
 """
+
+import nibabel
+import nibabel.affines
+import os
+import numpy as np
+import pandas as pd
+import concurrent.futures
+
+# Custom modules
+from .vis import *
+from .subject import *
 
 def extract_region(subject: Subject, values_list: list[int], brain: os.PathLike[str], aparc: os.PathLike[str], is_aligned: bool = False):
 

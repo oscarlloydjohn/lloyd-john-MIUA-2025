@@ -1,3 +1,14 @@
+"""
+Alignment
+===========
+
+This module provides functions for brain extraction and affine alignment of both the brain and auxilliary files such as parcellation files. The functions are designed to be used with the Subject class. 
+
+Because Nibabel does not have affine alignment, and ANTsPy does not have support for .mgh/.mgz files, the functions in this module use a hybrid of both libraries.
+
+:author: Oscar Lloyd-John
+"""
+
 import nibabel
 import nibabel.affines
 import os
@@ -10,17 +21,6 @@ import shutil
 from .vis import *
 from .extraction import *
 from .subject import *
-
-"""
-Alignment
-===========
-
-This module provides functions for brain extraction and affine alignment of both the brain and auxilliary files such as parcellation files. The functions are designed to be used with the Subject class. 
-
-Because Nibabel does not have affine alignment, and ANTsPy does not have support for .mgh/.mgz files, the functions in this module use a hybrid of both libraries.
-
-:author: Oscar Lloyd-John
-"""
 
 def extract_brain(orig_file: os.PathLike[str], mask_file: os.PathLike[str]) -> np.ndarray:
     """

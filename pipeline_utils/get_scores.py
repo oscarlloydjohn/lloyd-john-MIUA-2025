@@ -1,5 +1,3 @@
-import numpy as np
-
 """
 Image procesing
 ===========
@@ -8,6 +6,8 @@ This module provides a simple command line interface for inputting neurocognitiv
 
 :author: Oscar Lloyd-John
 """
+
+import numpy as np
 
 def get_scores(subject_data: dict) -> dict:
 

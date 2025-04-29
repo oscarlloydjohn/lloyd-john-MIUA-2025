@@ -1,8 +1,3 @@
-import os
-import fnmatch
-
-from .subject import Subject
-
 """
 File handling
 ===========
@@ -11,6 +6,11 @@ This module provides simple functions for handling files when processing brain i
 
 :author: Oscar Lloyd-John
 """
+
+import os
+import fnmatch
+
+from .subject import Subject
 
 def list_files_ext(data_path: os.PathLike[str], extensions: str) -> list:
 

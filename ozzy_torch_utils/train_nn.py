@@ -1,11 +1,3 @@
-import torch
-from torcheval.metrics import *
-from torch.utils.data import DataLoader
-from tqdm import tqdm
-from datetime import datetime
-from sklearn.metrics import roc_curve, roc_auc_score
-from .model_parameters import *
-
 """
 
 Train neural network
@@ -16,6 +8,14 @@ This module provides a function that trains a neural network classifier using th
 :author: Oscar Lloyd-John
 
 """
+
+import torch
+from torcheval.metrics import *
+from torch.utils.data import DataLoader
+from tqdm import tqdm
+from datetime import datetime
+from sklearn.metrics import roc_curve, roc_auc_score
+from .model_parameters import *
 
 def train_nn(model_parameters: ModelParameters, train_dataloader: DataLoader, test_dataloader: DataLoader, device: torch.device, train_only: bool = False, scheduler_start: int = 0) -> tuple[dict, torch.nn.Module]:
     

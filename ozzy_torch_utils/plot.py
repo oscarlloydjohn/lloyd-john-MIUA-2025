@@ -1,12 +1,3 @@
-from datetime import datetime
-import matplotlib.pyplot as plt
-from matplotlib.ticker import MaxNLocator
-from datetime import datetime
-import pickle
-from .subject_dataset import *
-from .model_parameters import *
-
-
 """
 
 Plot
@@ -17,6 +8,14 @@ This module provides a way to plot and store the results of a model training.
 :author: Oscar Lloyd-John
 
 """
+
+from datetime import datetime
+import matplotlib.pyplot as plt
+from matplotlib.ticker import MaxNLocator
+from datetime import datetime
+import pickle
+from .subject_dataset import *
+from .model_parameters import *
 
 # NB this function has to remain in the notebook for it to work properly
 # Plot training loss, validation loss, and accuracy on separate subplots, along with displaying hyperparameters

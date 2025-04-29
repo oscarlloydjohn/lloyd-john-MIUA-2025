@@ -1,9 +1,3 @@
-import os
-import pandas as pd
-import glob
-from pprint import pprint
-import concurrent.futures
-
 """
 
 Subject
@@ -16,6 +10,12 @@ When choosing the CSV file, make sure to use the csv returned from the ADNI Adva
 :author: Oscar Lloyd-John
 
 """
+
+import os
+import pandas as pd
+import glob
+from pprint import pprint
+import concurrent.futures
 
 class Subject:
 

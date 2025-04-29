@@ -1,8 +1,3 @@
-import os
-import shutil
-import argparse
-import random
-
 """
 Holdout set script
 =============================
@@ -18,6 +13,11 @@ Usage
 
 :author: Oscar Lloyd-John
 """
+
+import os
+import shutil
+import argparse
+import random
 
 def create_holdout(source, dest, num) -> None:
 

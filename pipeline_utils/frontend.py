@@ -1,3 +1,12 @@
+"""
+Frontend
+===========
+
+This module provides a simple PyQt GUI for the pipline
+
+:author: Oscar Lloyd-John
+"""
+
 import sys
 from PyQt5.QtWidgets import QApplication, QMainWindow, QTabWidget, QWidget, QVBoxLayout, QLabel
 from PyQt5.QtGui import QFont
@@ -10,15 +19,6 @@ import matplotlib.pyplot as plt
 import pyvista
 import pandas as pd
 import numpy as np
-
-"""
-Frontend
-===========
-
-This module provides a simple PyQt GUI for the pipline
-
-:author: Oscar Lloyd-John
-"""
 
 class MainWindow(QMainWindow):
     def __init__(self, prediction, hippocampus_plotter, volumes_plotter, shap_values):

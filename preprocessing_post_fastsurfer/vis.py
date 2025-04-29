@@ -1,12 +1,3 @@
-import nibabel
-import nibabel.affines
-from PIL import Image
-import numpy as np
-from IPython.display import display
-import pyvista as pv
-import matplotlib.pyplot as plt
-import os
-
 """
 Visualisation
 ===========
@@ -15,6 +6,15 @@ This module provides functions for visualising neuroimaging data within python. 
 
 :author: Oscar Lloyd-John
 """
+
+import nibabel
+import nibabel.affines
+from PIL import Image
+import numpy as np
+from IPython.display import display
+import pyvista as pv
+import matplotlib.pyplot as plt
+import os
 
 def display_image(image, clip: bool = True) -> None:
 

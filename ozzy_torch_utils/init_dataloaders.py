@@ -1,10 +1,3 @@
-# Torch
-from torch.utils.data import DataLoader
-
-# Custom modules
-from .split_dataset import *
-from .subject_dataset import *
-
 """
 
 Initialise dataloaders
@@ -15,6 +8,13 @@ Initialises train and test datasets for use in train_nn. These are created from 
 :author: Oscar Lloyd-John
 
 """
+
+# Torch
+from torch.utils.data import DataLoader
+
+# Custom modules
+from .split_dataset import *
+from .subject_dataset import *
 
 def init_dataloaders(model_parameters, num_workers = 4, load_in_memory = False, verify_data=False) -> tuple[DataLoader, DataLoader]:
     

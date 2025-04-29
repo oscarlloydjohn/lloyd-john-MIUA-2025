@@ -1,13 +1,3 @@
-import nibabel
-import nibabel.affines
-import os
-import numpy as np
-import concurrent.futures
-
-# Custom modules
-from .vis import *
-from .subject import *
-
 """
 
 Cropping
@@ -20,6 +10,16 @@ Note that the max bounding box functions are not intended to be used before imag
 :author: Oscar Lloyd-John
 
 """
+
+import nibabel
+import nibabel.affines
+import os
+import numpy as np
+import concurrent.futures
+
+# Custom modules
+from .vis import *
+from .subject import *
 
 # Not for use with images of range greater than 0-255 as saves as uint8
 def crop(subject: Subject, relative_path: os.PathLike[str], max_bbox: tuple[int, int, int, int, int, int], is_full_brain: bool = False):

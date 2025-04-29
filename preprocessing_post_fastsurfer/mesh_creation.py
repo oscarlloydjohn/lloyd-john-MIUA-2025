@@ -1,3 +1,12 @@
+"""
+Mesh creation
+===========
+
+This module provides functions for converting a voxel volumes into point clouds and manipulating these clouds. It is intended to be used for single brain regions such as the hippocampus however would theoretically work on the whole brain. It is designed to be used with the Subject class. The number of points can be specified in these functions such that the point clouds can be downsampled to a consistent size for use in neural networks.
+
+:author: Oscar Lloyd-John
+"""
+
 import nibabel
 import nibabel.affines
 import os
@@ -9,15 +18,6 @@ import open3d as o3d
 # Custom modules
 from .vis import *
 from .subject import *
-
-"""
-Mesh creation
-===========
-
-This module provides functions for converting a voxel volumes into point clouds and manipulating these clouds. It is intended to be used for single brain regions such as the hippocampus however would theoretically work on the whole brain. It is designed to be used with the Subject class. The number of points can be specified in these functions such that the point clouds can be downsampled to a consistent size for use in neural networks.
-
-:author: Oscar Lloyd-John
-"""
 
 def volume_to_mesh(subject: object, fname_or_attribute, smooth: bool = False, number_of_iterations: int = 1, lambda_filter: float = 0.5, **kwargs) -> dict:
 
