@@ -7,7 +7,7 @@ Welcome to sc22olj's final project documentation!
 =================================================
 
 Packages
-=============================
+-------------------
 The 5 interoperable Python packages created for this project are documented here.
 
 .. toctree::
@@ -19,8 +19,25 @@ The 5 interoperable Python packages created for this project are documented here
    pipeline_utils/index
    final_models_explainability/index
 
+
+Running the CDSS pipeline
+-------------------
+Instructions for running the CDSS are provided here: :doc:`Pipeline instructions <pipeline>`.
+
+
+Interactive plot of left hippocampal attributions
+-------------------
+As referenced in report figure 4.5
+
+.. raw:: html
+
+   <div style="max-width: 600px;">
+       <iframe src="_static/scene-export.html" width="100%" height="300px"></iframe>
+   </div>
+
+
 Indices and search
-==================
+-------------------
 
 * :ref:`genindex`
 * :ref:`modindex`

@@ -1,13 +1,3 @@
-import shutil
-import subprocess
-import argparse
-
-# Custom modules
-from final_models_explainability.get_predictions import *
-from pipeline_utils.image_processing import *
-from pipeline_utils.get_scores import *
-from pipeline_utils.frontend import *
-
 """
 Prototype explainable AI pipeline for CN vs MCI prediction on neuroimaging data
 ======================================
@@ -67,6 +57,16 @@ To run the script using a custom MRI. If using docker make sure it is running fi
 
 :author: Oscar Lloyd-John
 """
+
+import shutil
+import subprocess
+import argparse
+
+# Custom modules
+from final_models_explainability.get_predictions import *
+from pipeline_utils.image_processing import *
+from pipeline_utils.get_scores import *
+from pipeline_utils.frontend import *
 
 if __name__ == "__main__":
 

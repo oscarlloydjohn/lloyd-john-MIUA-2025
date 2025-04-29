@@ -23,7 +23,6 @@ import torch.nn.functional as F
 from pointnet2_benny import pointnet2_cls_msg
 from pointnet2_benny import pointnet2_cls_ssg
 from pointnet2_benny import provider
-import cnn3d_xmuyzz.ResNetV2
 
 # Custom modules
 from preprocessing_post_fastsurfer.subject import *

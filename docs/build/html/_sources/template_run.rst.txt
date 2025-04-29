@@ -1,0 +1,7 @@
+template_run module
+====================
+
+.. automodule:: template_run
+   :members:
+   :undoc-members:
+   :show-inheritance:
