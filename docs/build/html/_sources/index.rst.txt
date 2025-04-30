@@ -27,7 +27,7 @@ Instructions for running the CDSS are provided here: :doc:`Pipeline instructions
 
 Interactive plot of left hippocampal attributions
 -------------------
-As referenced in report figure 4.5
+As referenced in report figure 4.5. **You can interact with this plot**
 
 .. raw:: html
 
