@@ -7,3 +7,4 @@ It provides modules for processing NifTi format 3D ADNI (or other MRI) data, mod
 
 Please see the API documentation for details on the modules, information on the pipeline usage and a 3D visualisation of left hippocampal attributions:
 
+`https://uol-feps-soc-comp3931-project-2425.github.io/individual-project-sc22olj/``
