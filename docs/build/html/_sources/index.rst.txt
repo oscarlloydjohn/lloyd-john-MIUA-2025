@@ -3,7 +3,7 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to sc22olj's final project documentation!
+Welcome to the API documentation for repo lloyd-john-MIUA-2025
 =================================================
 
 Packages
@@ -22,7 +22,7 @@ The 5 interoperable Python packages created for this project are documented here
 
 Running the CDSS pipeline
 -------------------
-Instructions for running the CDSS are provided here: :doc:`Pipeline instructions <pipeline>`.
+Instructions for running a prototype clinical decision support system (CDSS), utilising this codebase, are provided here: :doc:`Pipeline instructions <pipeline>`.
 
 
 Interactive plot of left hippocampal attributions

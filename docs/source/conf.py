@@ -45,10 +45,9 @@ def setup(app):
     app.connect("builder-inited", run_apidoc)
 
 # -- Project information -----------------------------------------------------
-project = 'Final project sc22olj'
+project = 'lloyd-john-MIUA-2025'
 copyright = '2025, Oscar Lloyd-John'
 author = 'Oscar Lloyd-John'
-release = '0.1'
 
 # -- General configuration ---------------------------------------------------
 extensions = [
