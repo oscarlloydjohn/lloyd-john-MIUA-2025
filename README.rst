@@ -1,7 +1,7 @@
 Accompanying code for "Interpretable early Alzheimer’s detection using deep learning on left hippocampus point cloud representations"
 ==================
 
-The codebase explores deep learning methods on 3d MRI scans for the purpose of classifying between ADNI subjects that are denoted CN (cognitively normal) and MCI (mild cognitive impairment), which is an early stage of Alzheimer's disease. The research conducted using this code was presented at MIUA 2025 and published in Frontiers: 
+The codebase explores deep learning methods on 3D MRI scans for the purpose of classifying between ADNI subjects that are denoted CN (cognitively normal) and MCI (mild cognitive impairment), which is an early stage of Alzheimer's disease. The research conducted using this code was presented at MIUA 2025 and published in Frontiers. See page 45 of the MIUA proceeedings to contextualise this codebase: 
 
 `https://doi.org/10.3389/978-2-8325-5137-0`
 
