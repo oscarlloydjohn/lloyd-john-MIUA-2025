@@ -9,4 +9,4 @@ There are many temporary files in the dev branch which contain the results used 
 
 Please see the API documentation for details on the modules, information on the pipeline usage and a 3D visualisation of left hippocampal attributions:
 
-`https://uol-feps-soc-comp3931-project-2425.github.io/individual-project-sc22olj/`
+`https://oscarlloydjohn.github.io/lloyd-john-MIUA-2025/`
